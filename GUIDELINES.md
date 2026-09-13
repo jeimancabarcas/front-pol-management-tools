@@ -1,9 +1,10 @@
 # Standard Development Guidelines
 
-> **Mandatory Compliance Rule:** Every development task, feature addition, or refactoring in this project must strictly adhere to the three pillars defined in this document:
+> **Mandatory Compliance Rule:** Every development task, feature addition, or refactoring in this project must strictly adhere to the four pillars defined in this document:
 > 1. **Atomic Design** for UI component architecture and reuse.
 > 2. **UI/UX Guidelines** defined in [`src/DESIGN.md`](./src/DESIGN.md) (Carbon Enterprise System).
 > 3. **Repository Pattern** for the data layer and API consumption.
+> 4. **English-Only Naming Conventions** for all components, files, folders, code identifiers, and architecture layers.
 
 ---
 
@@ -15,12 +16,12 @@ Before writing code for any feature, follow this sequential workflow:
 flowchart TD
     A[New Requirement / Feature] --> B{Step 1: Do atomic components already exist?}
     B -- Yes --> C[Reuse existing Atoms / Molecules / Organisms]
-    B -- No --> D[Create new components at the appropriate atomic level]
+    B -- No --> D[Create new components in English at the appropriate atomic level]
     C --> E[Step 2: Apply styles and rules from src/DESIGN.md]
     D --> E
-    E --> F[Step 3: Define Domain Models & DTO Interfaces]
-    F --> G[Step 4: Implement Repository Contract & HTTP Implementation]
-    G --> H[Step 5: Consume Repository from Services / Components]
+    E --> F[Step 3: Define Domain Models & DTO Interfaces in English]
+    F --> G[Step 4: Implement Repository Contract & HTTP Implementation in English]
+    G --> H[Step 5: Consume Repository from Services / Components in English]
 ```
 
 ---
@@ -42,7 +43,7 @@ All user interface components must be classified and organized according to the 
 | **Molecules** | Combination of two or more atoms functioning together as a simple functional unit. | Form-Field (Label + Input + Error), Search Bar (Input + Icon + Button), User Avatar with name. | `src/app/shared/components/molecules/` |
 | **Organisms** | Grouping of molecules and atoms that form complete, functional sections of the UI. | Data Table with pagination (`DataTableComponent`), Header/Navbar, Sidebar, Registration Form. | `src/app/shared/components/organisms/` |
 | **Templates** | Layout structures and spatial arrangement (functional wireframes without hardcoded domain data). | Dashboard Layout, Auth Layout, Split Master-Detail Layout. | `src/app/shared/components/templates/` or `src/app/layouts/` |
-| **Pages / Views** | Concrete instances integrating templates with real data and services/repositories orchestration (routed in Angular). | `UserManagementPage`, `DashboardPage`, `ToolsListPage`. | `src/app/features/[feature-name]/pages/` |
+| **Pages / Views** | Concrete instances integrating templates with real data and services/repositories orchestration (routed in Angular). | `AssetInventoryPage`, `DashboardPage`, `ToolsListPage`. | `src/app/features/[feature-name]/pages/` |
 
 ---
 
@@ -102,7 +103,7 @@ To ensure loose coupling, maintainability, and testability, **UI components must
 [ HttpClient ]       [ Data Mappers / DTOs ]
 ```
 
-### 3.2. Directory Structure by Domain / Feature
+### 3.2. Directory Structure by Domain / Feature (All in English)
 
 ```
 src/app/core/
@@ -239,10 +240,30 @@ export class ToolListComponent implements OnInit {
 
 ---
 
-## 4. Best Practices & Quick Checklist
+## 4. English-Only Naming Conventions (Strict Standard)
 
-1. **No Inline Style Violations:** Never write arbitrary inline styles or classes that violate the color palette and spacing rhythm defined in `src/DESIGN.md`.
-2. **Reuse Existing Atomic Components:** Always check for existing atoms, molecules, or organisms before creating new ones.
-3. **Decouple UI from API:** Keep components clean by consuming repositories or state services instead of raw HTTP calls.
-4. **Follow the 8px Spacing Grid:** Rely on `8px` spacing units and `IBM Plex Sans` typography with weight hierarchy.
-5. **Ensure WCAG AA Accessibility:** Guarantee color contrast and a minimum touch target size of `48px` on interactive elements.
+**All code artifacts, components, folders, files, and identifiers MUST be written in English.** 
+
+| Element Type | Naming Convention | Examples |
+| :--- | :--- | :--- |
+| **Component Classes** | `PascalCase` in English | `AssetInventoryComponent`, `SaleModalComponent`, `ButtonComponent`, `NavbarComponent` |
+| **Folders & Directories** | `kebab-case` in English | `asset-inventory/`, `shared/components/atoms/`, `core/repositories/asset/` |
+| **File Names** | `kebab-case.[ext]` in English | `asset-inventory.ts`, `asset-inventory.html`, `asset.repository.ts`, `asset.model.ts` |
+| **Variables & Signals** | `camelCase` in English | `assetList`, `isLoading`, `totalAssets`, `searchTerm`, `selectedCategory` |
+| **Functions & Methods** | `camelCase` (Verb + Noun) in English | `loadAssets()`, `openSaleModal()`, `handleSearch()`, `createAsset()` |
+| **Interfaces, Models & Types** | `PascalCase` in English | `Asset`, `AssetCategory`, `AssetStatus`, `SaleTransaction`, `AssetDto` |
+| **Injection Tokens & Constants** | `UPPER_SNAKE_CASE` in English | `ASSET_REPOSITORY`, `DEFAULT_PAGE_SIZE`, `API_BASE_URL` |
+| **Route Paths** | `kebab-case` in English | `/inventory`, `/assets/register`, `/sales/history` |
+
+> *Note:* User-facing text and labels in the UI can remain localized (e.g. Spanish) according to business requirements, but the underlying code, template variable bindings, component names, and architecture MUST always be in English.
+
+---
+
+## 5. Best Practices & Quick Checklist
+
+1. **All Code & Names in English:** Component classes, files, folders, variables, interfaces, and methods must be named in English.
+2. **No Inline Style Violations:** Never write arbitrary inline styles or classes that violate the color palette and spacing rhythm defined in `src/DESIGN.md`.
+3. **Reuse Existing Atomic Components:** Always check for existing atoms, molecules, or organisms before creating new ones.
+4. **Decouple UI from API:** Keep components clean by consuming repositories or state services instead of raw HTTP calls.
+5. **Follow the 8px Spacing Grid:** Rely on `8px` spacing units and `IBM Plex Sans` typography with weight hierarchy.
+6. **Ensure WCAG AA Accessibility:** Guarantee color contrast and a minimum touch target size of `48px` on interactive elements.

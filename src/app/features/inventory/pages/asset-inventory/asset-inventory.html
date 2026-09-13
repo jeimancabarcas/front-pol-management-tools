@@ -1,0 +1,303 @@
+<div class="flex flex-col gap-6">
+  <!-- Top Breadcrumb & Metadata -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <nav class="flex items-center gap-1.5 text-xs text-[#525252] font-mono uppercase tracking-wider">
+      <span>Inventario</span>
+      <span class="text-[#8d8d8d]">&gt;</span>
+      <span class="text-[#0f62fe] font-semibold">Inventario de Bienes</span>
+    </nav>
+    <div class="inline-flex items-center gap-2 px-2.5 py-1 bg-[#f4f4f4] border border-[#e0e0e0] text-xs font-mono text-[#161616]">
+      <span class="w-2 h-2 rounded-full bg-[#198038]"></span>
+      <span>Base de Datos Sincronizada</span>
+    </div>
+  </div>
+
+  <!-- Page Header & Action Buttons -->
+  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e0e0e0] pb-6">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-normal text-[#161616] tracking-tight">
+        Inventario de Bienes
+      </h1>
+      <p class="mt-1 text-sm text-[#525252] leading-relaxed max-w-2xl">
+        Consolidado maestro de activos patrimoniales, equipos y bienes institucionales registrados.
+      </p>
+    </div>
+
+    <!-- Main 2 Actions: Registro y Venta -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- Opción 1: Venta de Bienes (Secondary Action) -->
+      <button
+        type="button"
+        (click)="openSaleModal()"
+        class="h-12 px-5 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors flex items-center gap-2.5 cursor-pointer"
+      >
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <span>Venta de Bienes</span>
+      </button>
+
+      <!-- Opción 2: Registrar Bien (Primary Action) -->
+      <button
+        type="button"
+        (click)="openRegisterModal()"
+        class="h-12 px-6 bg-[#0f62fe] hover:bg-[#0353e9] active:bg-[#002d9c] text-white text-sm font-medium transition-colors flex items-center gap-2.5 shadow-sm cursor-pointer"
+      >
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Registrar Bien</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Summary Cards (Carbon Enterprise Style) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Activos -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">Total Bienes</span>
+      <div class="text-2xl font-mono font-semibold text-[#161616] mt-1">
+        {{ totalAssetsCount() }}
+      </div>
+      <span class="text-[11px] text-[#525252] mt-1 block">Activos en catálogo</span>
+    </div>
+
+    <!-- Capital Total -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">Capital Patrimonial</span>
+      <div class="text-2xl font-mono font-semibold text-[#161616] mt-1">
+        $ {{ totalCapitalValue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+      </div>
+      <span class="text-[11px] text-[#198038] font-semibold mt-1 block">Valor contable activo</span>
+    </div>
+
+    <!-- Disponibles -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">Disponibles</span>
+      <div class="text-2xl font-mono font-semibold text-[#198038] mt-1">
+        {{ availableAssetsCount() }}
+      </div>
+      <span class="text-[11px] text-[#525252] mt-1 block">Listos para asignación</span>
+    </div>
+
+    <!-- Asignados / En Custodia -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">En Custodia</span>
+      <div class="text-2xl font-mono font-semibold text-[#0f62fe] mt-1">
+        {{ assignedAssetsCount() }}
+      </div>
+      <span class="text-[11px] text-[#525252] mt-1 block">Asignados a personal</span>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="bg-[#f4f4f4] p-3 sm:p-4 border border-[#e0e0e0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+    <!-- Search Bar -->
+    <div class="relative flex-1">
+      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#525252]">
+        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+      </div>
+      <input
+        type="search"
+        [ngModel]="searchTerm()"
+        (ngModelChange)="searchTerm.set($event)"
+        placeholder="Buscar por placa, denominación, custodio o ubicación..."
+        class="w-full h-10 pl-9 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none"
+      />
+    </div>
+
+    <!-- Category Filter -->
+    <div class="flex items-center gap-2">
+      <select
+        [ngModel]="selectedCategory()"
+        (ngModelChange)="selectedCategory.set($event)"
+        class="h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
+      >
+        <option value="ALL">Todas las Categorías</option>
+        @for (cat of categories(); track cat) {
+          <option [value]="cat">{{ cat }}</option>
+        }
+      </select>
+
+      <!-- Status Filter -->
+      <select
+        [ngModel]="selectedStatus()"
+        (ngModelChange)="selectedStatus.set($event)"
+        class="h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
+      >
+        <option value="ALL">Todos los Estados</option>
+        <option value="Available">Disponible</option>
+        <option value="Assigned">Asignado</option>
+        <option value="Maintenance">En Mantenimiento</option>
+        <option value="Sold">Vendido</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Data Table (Carbon High Density with Zebra Striping) -->
+  <div class="border border-[#e0e0e0] overflow-x-auto bg-white">
+    <table class="w-full text-left border-collapse" aria-label="Tabla de Inventario de Bienes">
+      <thead>
+        <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
+          <th class="py-3 px-4 border-b border-[#c6c6c6]">Código / Placa</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6]">Denominación del Bien</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6]">Categoría</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6]">Ubicación &amp; Custodio</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6] text-right">Valor Adq. (USD)</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6] text-center">Estado</th>
+          <th class="py-3 px-4 border-b border-[#c6c6c6] text-center">Fecha Reg.</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-[#e0e0e0] text-xs">
+        @if (isLoading()) {
+          <tr>
+            <td colspan="7" class="py-12 text-center text-[#525252]">
+              <div class="inline-flex items-center gap-2">
+                <span class="w-4 h-4 border-2 border-[#0f62fe] border-t-transparent rounded-full animate-spin"></span>
+                <span>Cargando inventario de bienes...</span>
+              </div>
+            </td>
+          </tr>
+        } @else if (filteredAssets().length === 0) {
+          <tr>
+            <td colspan="7" class="py-12 text-center text-[#525252]">
+              <p class="text-sm font-medium text-[#161616]">No se encontraron bienes registrados</p>
+              <p class="text-xs text-[#525252] mt-1">Pruebe ajustando los términos de búsqueda o filtros.</p>
+            </td>
+          </tr>
+        } @else {
+          @for (asset of filteredAssets(); track asset.id; let odd = $odd) {
+            <tr
+              [class.bg-[#f4f4f4]]="odd"
+              [class.bg-white]="!odd"
+              class="hover:bg-[#e8f0fe] transition-colors"
+            >
+              <!-- Código / Placa -->
+              <td class="py-3.5 px-4 font-mono font-semibold text-[#0f62fe] whitespace-nowrap">
+                {{ asset.assetTag }}
+              </td>
+
+              <!-- Denominación del Bien -->
+              <td class="py-3.5 px-4">
+                <span class="font-semibold text-[#161616] block text-sm">
+                  {{ asset.name }}
+                </span>
+                <span class="text-[11px] text-[#525252] font-mono">
+                  Lote: {{ asset.batchCode || 'N/A' }}
+                </span>
+              </td>
+
+              <!-- Categoría -->
+              <td class="py-3.5 px-4 text-[#525252] whitespace-nowrap">
+                <span class="px-2 py-0.5 bg-white border border-[#e0e0e0] text-[11px] font-medium">
+                  {{ asset.category }}
+                </span>
+              </td>
+
+              <!-- Ubicación & Custodio -->
+              <td class="py-3.5 px-4">
+                <span class="text-[#161616] block">
+                  {{ asset.location }}
+                </span>
+                <span class="text-[11px] text-[#525252] block mt-0.5">
+                  Custodio: <strong>{{ asset.custodian || 'Sin Asignar' }}</strong>
+                </span>
+              </td>
+
+              <!-- Valor Adquisición -->
+              <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#161616] whitespace-nowrap">
+                $ {{ asset.acquisitionValue | number:'1.2-2' }}
+              </td>
+
+              <!-- Estado Badge -->
+              <td class="py-3.5 px-4 text-center whitespace-nowrap">
+                @switch (asset.status) {
+                  @case ('Available') {
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-semibold bg-[#e5f6e8] text-[#198038] border border-[#198038]/30">
+                      ● Disponible
+                    </span>
+                  }
+                  @case ('Assigned') {
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-semibold bg-[#edf5ff] text-[#0f62fe] border border-[#0f62fe]/30">
+                      ● Asignado
+                    </span>
+                  }
+                  @case ('Maintenance') {
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-semibold bg-[#fef3d6] text-[#b28600] border border-[#b28600]/30">
+                      ▲ Mantenimiento
+                    </span>
+                  }
+                  @case ('Sold') {
+                    <span class="inline-flex items-center px-2 py-0.5 text-[11px] font-mono font-semibold bg-[#f4f4f4] text-[#525252] border border-[#8d8d8d]">
+                      ■ Vendido
+                    </span>
+                  }
+                }
+              </td>
+
+              <!-- Fecha Registro -->
+              <td class="py-3.5 px-4 text-center font-mono text-[#525252] whitespace-nowrap">
+                {{ asset.registrationDate }}
+              </td>
+            </tr>
+          }
+        }
+      </tbody>
+    </table>
+
+    <!-- Table Footer / Count -->
+    <div class="px-4 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex items-center justify-between text-xs text-[#525252] font-mono">
+      <span>Mostrando {{ filteredAssets().length }} de {{ totalAssetsCount() }} registros</span>
+      <span>Normativa IFRS/NIC-16</span>
+    </div>
+  </div>
+</div>
+
+<!-- Modal / Placeholder Info Box para Registrar Bien / Venta de Bienes -->
+@if (activeModal()) {
+  <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+    <div class="bg-white max-w-lg w-full border border-[#161616] p-6 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
+        <h3 class="text-base font-semibold text-[#161616]">
+          @if (activeModal() === 'REGISTER') {
+            Registrar Nuevo Bien en Inventario
+          } @else {
+            Módulo de Venta de Bienes
+          }
+        </h3>
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="text-[#525252] hover:text-[#161616] text-xl font-bold px-2 cursor-pointer"
+        >
+          ×
+        </button>
+      </div>
+
+      <div class="bg-[#edf5ff] p-4 border-l-4 border-[#0f62fe] text-xs text-[#161616] leading-relaxed">
+        <p class="font-semibold text-[#0043ce] mb-1">
+          @if (activeModal() === 'REGISTER') {
+            Formulario de Registro
+          } @else {
+            Formulario de Venta
+          }
+        </p>
+        <p>
+          Este botón está listo y conectado. Los campos y validaciones detalladas del formulario se integrarán en el siguiente paso según tus indicaciones.
+        </p>
+      </div>
+
+      <div class="flex justify-end gap-3 pt-2">
+        <button
+          type="button"
+          (click)="closeModal()"
+          class="h-10 px-5 bg-[#0f62fe] text-white text-xs font-medium hover:bg-[#0353e9] cursor-pointer"
+        >
+          Entendido / Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+}

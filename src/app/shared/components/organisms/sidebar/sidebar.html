@@ -1,0 +1,52 @@
+<!-- Mobile Backdrop -->
+@if (isOpen()) {
+  <div
+    class="fixed inset-0 bg-black/30 z-20 lg:hidden transition-opacity"
+    (click)="closeMobile.emit()"
+    aria-hidden="true"
+  ></div>
+}
+
+<aside
+  [class.translate-x-0]="isOpen()"
+  [class.-translate-x-full]="!isOpen()"
+  class="fixed lg:static top-14 left-0 h-[calc(100dvh-3.5rem)] w-64 bg-white border-r border-[#e0e0e0] flex flex-col z-20 transition-transform duration-200 ease-in-out select-none flex-shrink-0"
+>
+  <!-- Section Title -->
+  <div class="px-5 pt-5 pb-2">
+    <h2 class="text-[11px] font-semibold tracking-wider text-[#525252] uppercase font-mono">
+      Módulos Operativos
+    </h2>
+  </div>
+
+  <!-- Navigation List -->
+  <nav class="flex-1 px-3 py-2 space-y-1 overflow-y-auto" aria-label="Sidebar Navigation">
+    @for (item of navItems; track item.id) {
+      <a
+        [routerLink]="item.route"
+        routerLinkActive="bg-[#edf5ff] text-[#0f62fe] font-semibold border-l-4 border-[#0f62fe]"
+        [routerLinkActiveOptions]="{ exact: false }"
+        class="group flex items-center gap-3.5 px-3 py-3 text-sm font-normal text-[#161616] rounded-r transition-all hover:bg-[#f4f4f4] hover:text-[#0f62fe]"
+        (click)="closeMobile.emit()"
+      >
+        <!-- Icon: Inventory -->
+        <span class="w-5 h-5 flex items-center justify-center flex-shrink-0 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
+        </span>
+
+        <!-- Label -->
+        <span class="truncate">{{ item.label }}</span>
+      </a>
+    }
+  </nav>
+
+  <!-- Sidebar Footer / Status Info -->
+  <div class="p-4 border-t border-[#e0e0e0] text-xs text-[#525252]">
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-[#198038]"></span>
+      <span class="font-mono text-[11px]">Sistema Operativo v1.0</span>
+    </div>
+  </div>
+</aside>
