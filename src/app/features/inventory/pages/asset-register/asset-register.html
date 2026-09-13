@@ -1,0 +1,240 @@
+<div class="flex flex-col gap-6 max-w-5xl">
+  <!-- Top Breadcrumb -->
+  <div class="flex flex-wrap items-center justify-between gap-3">
+    <nav class="flex items-center gap-1.5 text-xs text-[#525252] font-mono uppercase tracking-wider" aria-label="Breadcrumb">
+      <a routerLink="/inventory" class="hover:text-[#0f62fe] transition-colors underline-offset-4 hover:underline">
+        Inventario de Bienes
+      </a>
+      <span class="text-[#8d8d8d]">&gt;</span>
+      <span class="text-[#0f62fe] font-semibold">Registrar Nuevo Bien</span>
+    </nav>
+  </div>
+
+  <!-- Page Header -->
+  <div class="border-b border-[#e0e0e0] pb-5">
+    <h1 class="text-2xl sm:text-3xl font-normal text-[#161616] tracking-tight">
+      Registrar Nuevo Bien en Inventario
+    </h1>
+    <p class="mt-2 text-sm text-[#525252] max-w-3xl leading-relaxed">
+      Complete el formulario para incorporar el activo al catálogo patrimonial. Los bienes registrados se sumarán de inmediato al stock disponible y balance institucional.
+    </p>
+  </div>
+
+  <!-- Success Notification Banner -->
+  @if (showSuccessNotification()) {
+    <div class="bg-[#defbe6] border-l-4 border-[#198038] p-4 flex items-center justify-between gap-3 text-xs text-[#161616] animate-pulse">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#198038] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+        </svg>
+        <span class="font-medium">
+          ¡Bien registrado con éxito! Redirigiendo al catálogo de inventario...
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Form Layout: Form Section + Live Summary Card -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left 2 Cols: Form -->
+    <div class="lg:col-span-2">
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0]">
+          <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-5">
+            <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
+              Datos Técnicos del Bien
+            </h2>
+            <span class="text-[11px] text-[#da1e28] font-mono">* Campos Obligatorios</span>
+          </div>
+
+          <div class="space-y-5">
+            <!-- Field: Nombre del Bien -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="name" class="text-xs font-semibold text-[#161616]">
+                  Nombre del Bien <span class="text-[#da1e28]">*</span>
+                </label>
+                <span class="text-[11px] text-[#525252] font-mono">Máx. 120 car.</span>
+              </div>
+              <input
+                id="name"
+                type="text"
+                formControlName="name"
+                placeholder="Ej. Laptop Lenovo ThinkPad T14s Gen 4"
+                [class.border-[#da1e28]]="nameControl?.invalid && nameControl?.touched"
+                class="w-full h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm text-[#161616] placeholder-[#8d8d8d] outline-none transition-colors"
+              />
+              @if (nameControl?.invalid && nameControl?.touched) {
+                <p class="text-xs text-[#da1e28] mt-1">
+                  El nombre es obligatorio y debe tener al menos 3 caracteres.
+                </p>
+              } @else {
+                <p class="text-[11px] text-[#525252] mt-1">
+                  Especifique marca, modelo y características para unicidad catalogal.
+                </p>
+              }
+            </div>
+
+            <!-- Grid: Tipo de Bien & Valor de Adquisición -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Field: Tipo de Bien (Campo de Texto) -->
+              <div>
+                <label for="assetType" class="block text-xs font-semibold text-[#161616] mb-1.5">
+                  Tipo de Bien <span class="text-[#da1e28]">*</span>
+                </label>
+                <input
+                  id="assetType"
+                  type="text"
+                  formControlName="assetType"
+                  placeholder="Ej. Equipos de Cómputo, Mobiliario..."
+                  [class.border-[#da1e28]]="assetTypeControl?.invalid && assetTypeControl?.touched"
+                  class="w-full h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm text-[#161616] placeholder-[#8d8d8d] outline-none transition-colors"
+                />
+                @if (assetTypeControl?.invalid && assetTypeControl?.touched) {
+                  <p class="text-xs text-[#da1e28] mt-1">
+                    El tipo de bien es obligatorio.
+                  </p>
+                } @else {
+                  <p class="text-[11px] text-[#525252] mt-1">
+                    Clasificación contable y funcional.
+                  </p>
+                }
+              </div>
+
+              <!-- Field: Valor de Adquisición -->
+              <div>
+                <label for="acquisitionValue" class="block text-xs font-semibold text-[#161616] mb-1.5">
+                  Valor de Adquisición (USD) <span class="text-[#da1e28]">*</span>
+                </label>
+                <div class="relative">
+                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-semibold text-[#525252] pointer-events-none">
+                    $
+                  </span>
+                  <input
+                    id="acquisitionValue"
+                    type="number"
+                    step="0.01"
+                    formControlName="acquisitionValue"
+                    placeholder="0.00"
+                    [class.border-[#da1e28]]="valueControl?.invalid && valueControl?.touched"
+                    class="w-full h-10 pl-8 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm font-mono text-[#161616] placeholder-[#8d8d8d] outline-none transition-colors"
+                  />
+                </div>
+                @if (valueControl?.invalid && valueControl?.touched) {
+                  <p class="text-xs text-[#da1e28] mt-1">
+                    Ingrese un valor válido mayor a 0.
+                  </p>
+                } @else {
+                  <p class="text-[11px] text-[#525252] mt-1">
+                    Valor contable de compra exento de IVA.
+                  </p>
+                }
+              </div>
+            </div>
+
+            <!-- Field: Descripción -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label for="description" class="text-xs font-semibold text-[#161616]">
+                  Descripción Detallada
+                </label>
+                <span class="text-[11px] text-[#525252] font-mono">Opcional (Máx. 300 car.)</span>
+              </div>
+              <textarea
+                id="description"
+                rows="3"
+                formControlName="description"
+                placeholder="Añada detalles adicionales, accesorios incluidos, especificaciones técnicas o notas de recepción..."
+                class="w-full p-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm text-[#161616] placeholder-[#8d8d8d] outline-none resize-y transition-colors"
+              ></textarea>
+            </div>
+          </div>
+        </section>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-3 justify-end">
+          <button
+            type="button"
+            (click)="cancel()"
+            class="h-12 px-6 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            [disabled]="isSubmitting()"
+            class="h-12 px-8 bg-[#0f62fe] hover:bg-[#0353e9] active:bg-[#002d9c] disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+          >
+            @if (isSubmitting()) {
+              <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+              <span>Guardando...</span>
+            } @else {
+              <span>Guardar en Inventario</span>
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Right 1 Col: Live Resumen del Alta -->
+    <div>
+      <div class="bg-[#f4f4f4] p-5 border border-[#e0e0e0] sticky top-20">
+        <!-- Summary Header -->
+        <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-4">
+          <div class="flex items-center gap-2 text-xs font-semibold text-[#0f62fe] uppercase font-mono">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>Resumen del Registro</span>
+          </div>
+          <span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#e5f6e8] text-[#198038] border border-[#198038]/30 uppercase">
+            En Edición
+          </span>
+        </div>
+
+        <!-- Category Tag -->
+        <div class="mb-4">
+          <span class="text-[11px] font-mono text-[#525252] block uppercase mb-1">Tipo / Categoría</span>
+          <span class="inline-block px-2.5 py-1 bg-[#0f62fe] text-white text-xs font-medium">
+            {{ registerForm.get('assetType')?.value || 'Sin Definir' }}
+          </span>
+        </div>
+
+        <!-- Asset Name -->
+        <div class="mb-5">
+          <span class="text-[11px] font-mono text-[#525252] block uppercase mb-1">Denominación</span>
+          <h3 class="text-sm font-semibold text-[#161616] leading-snug">
+            {{ registerForm.get('name')?.value || 'Nombre del bien pendiente...' }}
+          </h3>
+        </div>
+
+        <!-- Description Preview -->
+        @if (registerForm.get('description')?.value) {
+          <div class="mb-4 border-t border-[#e0e0e0] pt-3 text-xs text-[#525252] italic leading-relaxed">
+            "{{ registerForm.get('description')?.value }}"
+          </div>
+        }
+
+        <!-- Financial Impact Box -->
+        <div class="border-t border-[#e0e0e0] pt-4">
+          <div class="flex items-center justify-between text-xs text-[#525252] mb-1">
+            <span>Impacto Patrimonial</span>
+            <span class="text-[#198038] font-semibold">+ Capital Activo</span>
+          </div>
+          <div class="text-2xl font-mono font-semibold text-[#161616]">
+            $ {{ (registerForm.get('acquisitionValue')?.value || 0) | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+          </div>
+        </div>
+
+        <!-- Audit Note -->
+        <div class="mt-4 pt-3 border-t border-[#e0e0e0] text-[11px] text-[#525252] flex items-center gap-1.5 font-mono">
+          <span class="w-1.5 h-1.5 rounded-full bg-[#198038]"></span>
+          <span>Sincronización automática de inventario</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

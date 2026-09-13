@@ -6,6 +6,7 @@ export interface Asset {
   name: string;
   category: string;
   assetType: string;
+  description?: string;
   location: string;
   acquisitionValue: number;
   currency: string;

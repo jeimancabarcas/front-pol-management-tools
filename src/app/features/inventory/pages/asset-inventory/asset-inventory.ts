@@ -1,13 +1,14 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
 import { ASSET_REPOSITORY } from '../../../../core/repositories/asset/asset.repository';
-import { Asset, AssetStatus } from '../../../../core/repositories/asset/models/asset.model';
+import { Asset } from '../../../../core/repositories/asset/models/asset.model';
 
 @Component({
   selector: 'app-asset-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './asset-inventory.html',
 })
 export class AssetInventoryComponent implements OnInit {
@@ -17,29 +18,50 @@ export class AssetInventoryComponent implements OnInit {
   readonly assets = signal<Asset[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly searchTerm = signal<string>('');
-  readonly selectedCategory = signal<string>('ALL');
-  readonly selectedStatus = signal<string>('ALL');
-  readonly activeModal = signal<'REGISTER' | 'SALE' | null>(null);
+  readonly selectedType = signal<string>('ALL');
+  readonly activeModal = signal<'SALE' | null>(null);
 
-  // Computed Values
+  // Pagination Signals
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(5);
+  readonly pageSizeOptions: number[] = [5, 10, 20, 50];
+
+  // Computed Filtered List
   readonly filteredAssets = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
-    const cat = this.selectedCategory();
-    const est = this.selectedStatus();
+    const type = this.selectedType();
 
     return this.assets().filter((item) => {
       const matchSearch =
         !term ||
         item.name.toLowerCase().includes(term) ||
-        item.assetTag.toLowerCase().includes(term) ||
-        item.location.toLowerCase().includes(term) ||
-        (item.custodian && item.custodian.toLowerCase().includes(term));
+        item.assetType.toLowerCase().includes(term) ||
+        (item.description && item.description.toLowerCase().includes(term));
 
-      const matchCat = cat === 'ALL' || item.category === cat;
-      const matchEst = est === 'ALL' || item.status === est;
+      const matchType = type === 'ALL' || item.assetType.toLowerCase() === type.toLowerCase();
 
-      return matchSearch && matchCat && matchEst;
+      return matchSearch && matchType;
     });
+  });
+
+  // Computed Pagination
+  readonly totalPages = computed(() => {
+    const total = this.filteredAssets().length;
+    return Math.max(1, Math.ceil(total / this.pageSize()));
+  });
+
+  readonly paginatedAssets = computed(() => {
+    const start = (this.currentPage() - 1) * this.pageSize();
+    return this.filteredAssets().slice(start, start + this.pageSize());
+  });
+
+  readonly startItemIndex = computed(() => {
+    if (this.filteredAssets().length === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  });
+
+  readonly endItemIndex = computed(() => {
+    return Math.min(this.currentPage() * this.pageSize(), this.filteredAssets().length);
   });
 
   readonly totalAssetsCount = computed(() => this.assets().length);
@@ -48,17 +70,9 @@ export class AssetInventoryComponent implements OnInit {
     this.assets().reduce((acc, curr) => acc + curr.acquisitionValue, 0)
   );
 
-  readonly availableAssetsCount = computed(
-    () => this.assets().filter((a) => a.status === 'Available').length
-  );
-
-  readonly assignedAssetsCount = computed(
-    () => this.assets().filter((a) => a.status === 'Assigned').length
-  );
-
-  readonly categories = computed(() => {
-    const set = new Set(this.assets().map((a) => a.category));
-    return Array.from(set);
+  readonly assetTypesList = computed(() => {
+    const set = new Set(this.assets().map((a) => a.assetType));
+    return Array.from(set).filter(Boolean);
   });
 
   ngOnInit(): void {
@@ -79,8 +93,49 @@ export class AssetInventoryComponent implements OnInit {
     });
   }
 
-  openRegisterModal(): void {
-    this.activeModal.set('REGISTER');
+  // Search & Filter handlers with page reset
+  onSearchChange(term: string): void {
+    this.searchTerm.set(term);
+    this.currentPage.set(1);
+  }
+
+  onTypeChange(type: string): void {
+    this.selectedType.set(type);
+    this.currentPage.set(1);
+  }
+
+  // Pagination Methods
+  setPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+    }
+  }
+
+  nextPage(): void {
+    if (this.currentPage() < this.totalPages()) {
+      this.currentPage.update((p) => p + 1);
+    }
+  }
+
+  previousPage(): void {
+    if (this.currentPage() > 1) {
+      this.currentPage.update((p) => p - 1);
+    }
+  }
+
+  firstPage(): void {
+    this.currentPage.set(1);
+  }
+
+  lastPage(): void {
+    this.currentPage.set(this.totalPages());
+  }
+
+  onPageSizeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    const newSize = Number(target.value);
+    this.pageSize.set(newSize);
+    this.currentPage.set(1);
   }
 
   openSaleModal(): void {
