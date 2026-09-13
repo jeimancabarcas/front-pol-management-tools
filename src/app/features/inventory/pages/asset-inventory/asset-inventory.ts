@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ASSET_REPOSITORY } from '../../../../core/repositories/asset/asset.repository';
+import { SALE_REPOSITORY } from '../../../../core/repositories/sale/sale.repository';
 import { Asset } from '../../../../core/repositories/asset/models/asset.model';
+import { Sale } from '../../../../core/repositories/sale/models/sale.model';
 
 @Component({
   selector: 'app-asset-inventory',
@@ -13,20 +15,32 @@ import { Asset } from '../../../../core/repositories/asset/models/asset.model';
 })
 export class AssetInventoryComponent implements OnInit {
   private readonly assetRepository = inject(ASSET_REPOSITORY);
+  private readonly saleRepository = inject(SALE_REPOSITORY);
 
-  // State Signals
+  // Active Tab: 'INVENTORY' | 'SALES' or showing both sections
+  readonly activeTab = signal<'INVENTORY' | 'SALES'>('INVENTORY');
+
+  // Asset Inventory State
   readonly assets = signal<Asset[]>([]);
   readonly isLoading = signal<boolean>(true);
   readonly searchTerm = signal<string>('');
   readonly selectedType = signal<string>('ALL');
-  readonly activeModal = signal<'SALE' | null>(null);
 
-  // Pagination Signals
+  // Asset Pagination Signals
   readonly currentPage = signal<number>(1);
   readonly pageSize = signal<number>(5);
   readonly pageSizeOptions: number[] = [5, 10, 20, 50];
 
-  // Computed Filtered List
+  // Sales History State
+  readonly sales = signal<Sale[]>([]);
+  readonly isLoadingSales = signal<boolean>(true);
+  readonly salesSearchTerm = signal<string>('');
+
+  // Sales Pagination Signals
+  readonly salesCurrentPage = signal<number>(1);
+  readonly salesPageSize = signal<number>(5);
+
+  // Computed Filtered Assets
   readonly filteredAssets = computed(() => {
     const term = this.searchTerm().toLowerCase().trim();
     const type = this.selectedType();
@@ -44,7 +58,7 @@ export class AssetInventoryComponent implements OnInit {
     });
   });
 
-  // Computed Pagination
+  // Computed Asset Pagination
   readonly totalPages = computed(() => {
     const total = this.filteredAssets().length;
     return Math.max(1, Math.ceil(total / this.pageSize()));
@@ -75,8 +89,54 @@ export class AssetInventoryComponent implements OnInit {
     return Array.from(set).filter(Boolean);
   });
 
+  // Computed Filtered Sales
+  readonly filteredSales = computed(() => {
+    const term = this.salesSearchTerm().toLowerCase().trim();
+
+    return this.sales().filter((sale) => {
+      return (
+        !term ||
+        sale.assetName.toLowerCase().includes(term) ||
+        sale.assetType.toLowerCase().includes(term) ||
+        sale.buyerName.toLowerCase().includes(term) ||
+        (sale.buyerDocument && sale.buyerDocument.toLowerCase().includes(term)) ||
+        (sale.notes && sale.notes.toLowerCase().includes(term))
+      );
+    });
+  });
+
+  readonly totalSalesCount = computed(() => this.sales().length);
+
+  readonly totalSalesRevenue = computed(() =>
+    this.sales().reduce((acc, curr) => acc + curr.salePrice, 0)
+  );
+
+  readonly totalSalesPages = computed(() => {
+    const total = this.filteredSales().length;
+    return Math.max(1, Math.ceil(total / this.salesPageSize()));
+  });
+
+  readonly paginatedSales = computed(() => {
+    const start = (this.salesCurrentPage() - 1) * this.salesPageSize();
+    return this.filteredSales().slice(start, start + this.salesPageSize());
+  });
+
+  readonly salesStartItemIndex = computed(() => {
+    if (this.filteredSales().length === 0) return 0;
+    return (this.salesCurrentPage() - 1) * this.salesPageSize() + 1;
+  });
+
+  readonly salesEndItemIndex = computed(() => {
+    return Math.min(this.salesCurrentPage() * this.salesPageSize(), this.filteredSales().length);
+  });
+
   ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData(): void {
     this.loadAssets();
+    this.loadSales();
   }
 
   loadAssets(): void {
@@ -93,7 +153,21 @@ export class AssetInventoryComponent implements OnInit {
     });
   }
 
-  // Search & Filter handlers with page reset
+  loadSales(): void {
+    this.isLoadingSales.set(true);
+    this.saleRepository.getAll().subscribe({
+      next: (data) => {
+        this.sales.set(data);
+        this.isLoadingSales.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading sales history:', err);
+        this.isLoadingSales.set(false);
+      },
+    });
+  }
+
+  // Asset Filter handlers
   onSearchChange(term: string): void {
     this.searchTerm.set(term);
     this.currentPage.set(1);
@@ -104,7 +178,7 @@ export class AssetInventoryComponent implements OnInit {
     this.currentPage.set(1);
   }
 
-  // Pagination Methods
+  // Asset Pagination
   setPage(page: number): void {
     if (page >= 1 && page <= this.totalPages()) {
       this.currentPage.set(page);
@@ -133,16 +207,43 @@ export class AssetInventoryComponent implements OnInit {
 
   onPageSizeChange(event: Event): void {
     const target = event.target as HTMLSelectElement;
-    const newSize = Number(target.value);
-    this.pageSize.set(newSize);
+    this.pageSize.set(Number(target.value));
     this.currentPage.set(1);
   }
 
-  openSaleModal(): void {
-    this.activeModal.set('SALE');
+  // Sales Filter & Pagination
+  onSalesSearchChange(term: string): void {
+    this.salesSearchTerm.set(term);
+    this.salesCurrentPage.set(1);
   }
 
-  closeModal(): void {
-    this.activeModal.set(null);
+  nextSalesPage(): void {
+    if (this.salesCurrentPage() < this.totalSalesPages()) {
+      this.salesCurrentPage.update((p) => p + 1);
+    }
+  }
+
+  previousSalesPage(): void {
+    if (this.salesCurrentPage() > 1) {
+      this.salesCurrentPage.update((p) => p - 1);
+    }
+  }
+
+  firstSalesPage(): void {
+    this.salesCurrentPage.set(1);
+  }
+
+  lastSalesPage(): void {
+    this.salesCurrentPage.set(this.totalSalesPages());
+  }
+
+  onSalesPageSizeChange(event: Event): void {
+    const target = event.target as HTMLSelectElement;
+    this.salesPageSize.set(Number(target.value));
+    this.salesCurrentPage.set(1);
+  }
+
+  setActiveTab(tab: 'INVENTORY' | 'SALES'): void {
+    this.activeTab.set(tab);
   }
 }

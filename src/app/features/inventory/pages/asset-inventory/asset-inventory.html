@@ -10,26 +10,25 @@
   <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#e0e0e0] pb-6">
     <div>
       <h1 class="text-2xl sm:text-3xl font-normal text-[#161616] tracking-tight">
-        Inventario de Bienes
+        Inventario &amp; Gestión de Bienes
       </h1>
       <p class="mt-1 text-sm text-[#525252] leading-relaxed max-w-2xl">
-        Listado consolidado de bienes registrados en el sistema.
+        Control integral de activos registrados y registro histórico de transacciones comerciales.
       </p>
     </div>
 
     <!-- Main 2 Actions: Venta y Registro -->
     <div class="flex items-center gap-3 flex-wrap">
       <!-- Opción 1: Venta de Bienes (Secondary Action) -->
-      <button
-        type="button"
-        (click)="openSaleModal()"
-        class="h-12 px-5 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors flex items-center gap-2.5 cursor-pointer"
+      <a
+        routerLink="/inventory/sale"
+        class="h-12 px-5 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors flex items-center gap-2.5 cursor-pointer no-underline"
       >
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
         </svg>
         <span>Venta de Bienes</span>
-      </button>
+      </a>
 
       <!-- Opción 2: Registrar Bien (Primary Action) -->
       <a
@@ -44,244 +43,426 @@
     </div>
   </div>
 
-  <!-- KPI Summary Bar (Carbon Enterprise Style) -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-    <!-- Total Bienes -->
+  <!-- KPI Summary Cards (Carbon Enterprise Style) -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <!-- Total Bienes en Stock -->
     <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
-      <span class="text-xs font-mono uppercase text-[#525252] block">Total Bienes Registrados</span>
+      <span class="text-xs font-mono uppercase text-[#525252] block">Bienes en Inventario</span>
       <div class="text-2xl font-mono font-semibold text-[#161616] mt-1">
         {{ totalAssetsCount() }}
       </div>
+      <span class="text-[11px] text-[#525252] mt-1 block">Stock activo disponible</span>
     </div>
 
-    <!-- Capital Total -->
+    <!-- Capital Total Activo -->
     <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
-      <span class="text-xs font-mono uppercase text-[#525252] block">Valor Total Acumulado</span>
+      <span class="text-xs font-mono uppercase text-[#525252] block">Valor Activo Acumulado</span>
       <div class="text-2xl font-mono font-semibold text-[#161616] mt-1">
         $ {{ totalCapitalValue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
       </div>
+      <span class="text-[11px] text-[#0f62fe] font-semibold mt-1 block">Capital en inventario</span>
     </div>
-  </div>
 
-  <!-- Search & Filter Controls -->
-  <div class="bg-[#f4f4f4] p-3 sm:p-4 border border-[#e0e0e0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-    <!-- Search Bar -->
-    <div class="relative flex-1">
-      <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#525252]">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
+    <!-- Total Ventas Realizadas -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">Bienes Vendidos</span>
+      <div class="text-2xl font-mono font-semibold text-[#da1e28] mt-1">
+        {{ totalSalesCount() }}
       </div>
-      <input
-        type="search"
-        [ngModel]="searchTerm()"
-        (ngModelChange)="onSearchChange($event)"
-        placeholder="Buscar por nombre, tipo o descripción..."
-        class="w-full h-10 pl-9 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none"
-      />
+      <span class="text-[11px] text-[#525252] mt-1 block">Bajas por venta</span>
     </div>
 
-    <!-- Type Filter -->
-    <div class="flex items-center gap-2">
-      <select
-        [ngModel]="selectedType()"
-        (ngModelChange)="onTypeChange($event)"
-        class="h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
-      >
-        <option value="ALL">Todos los Tipos</option>
-        @for (type of assetTypesList(); track type) {
-          <option [value]="type">{{ type }}</option>
-        }
-      </select>
+    <!-- Total Ingresos por Ventas -->
+    <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
+      <span class="text-xs font-mono uppercase text-[#525252] block">Ingresos por Ventas</span>
+      <div class="text-2xl font-mono font-semibold text-[#198038] mt-1">
+        $ {{ totalSalesRevenue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+      </div>
+      <span class="text-[11px] text-[#198038] font-semibold mt-1 block">Total comercializado</span>
     </div>
   </div>
 
-  <!-- Data Table (Paginated: Showing only the 4 form fields) -->
-  <div class="border border-[#e0e0e0] overflow-x-auto bg-white shadow-sm">
-    <table class="w-full text-left border-collapse" aria-label="Tabla de Inventario de Bienes">
-      <thead>
-        <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
-          <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/4">Nombre</th>
-          <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/5">Tipo de Bien</th>
-          <th class="py-3 px-4 border-b border-[#c6c6c6] w-2/5">Descripción</th>
-          <th class="py-3 px-4 border-b border-[#c6c6c6] text-right w-1/6">Valor (USD)</th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-[#e0e0e0] text-xs">
-        @if (isLoading()) {
-          <tr>
-            <td colspan="4" class="py-12 text-center text-[#525252]">
-              <div class="inline-flex items-center gap-2">
-                <span class="w-4 h-4 border-2 border-[#0f62fe] border-t-transparent rounded-full animate-spin"></span>
-                <span>Cargando inventario de bienes...</span>
-              </div>
-            </td>
-          </tr>
-        } @else if (filteredAssets().length === 0) {
-          <tr>
-            <td colspan="4" class="py-12 text-center text-[#525252]">
-              <p class="text-sm font-medium text-[#161616]">No se encontraron bienes registrados</p>
-              <p class="text-xs text-[#525252] mt-1">Pruebe ajustando los términos de búsqueda o registre un nuevo bien.</p>
-            </td>
-          </tr>
-        } @else {
-          @for (asset of paginatedAssets(); track asset.id; let odd = $odd) {
-            <tr
-              [class.bg-[#f4f4f4]]="odd"
-              [class.bg-white]="!odd"
-              class="hover:bg-[#e8f0fe] transition-colors"
-            >
-              <!-- 1. Nombre -->
-              <td class="py-3.5 px-4 font-semibold text-[#161616]">
-                {{ asset.name }}
-              </td>
+  <!-- Segmented Section Tabs (Carbon Style) -->
+  <div class="flex items-center border-b border-[#e0e0e0] gap-2 pt-2">
+    <button
+      type="button"
+      (click)="setActiveTab('INVENTORY')"
+      [class.border-[#0f62fe]]="activeTab() === 'INVENTORY'"
+      [class.text-[#0f62fe]]="activeTab() === 'INVENTORY'"
+      [class.font-semibold]="activeTab() === 'INVENTORY'"
+      [class.border-transparent]="activeTab() !== 'INVENTORY'"
+      [class.text-[#525252]]="activeTab() !== 'INVENTORY'"
+      class="px-5 py-3 text-sm border-b-2 hover:text-[#161616] transition-colors flex items-center gap-2 cursor-pointer"
+    >
+      <span>Inventario de Bienes</span>
+      <span class="px-2 py-0.5 text-xs font-mono bg-[#f4f4f4] text-[#161616] rounded-full">
+        {{ totalAssetsCount() }}
+      </span>
+    </button>
 
-              <!-- 2. Tipo de Bien -->
-              <td class="py-3.5 px-4 text-[#525252]">
-                <span class="px-2.5 py-1 bg-white border border-[#e0e0e0] text-xs font-medium text-[#161616] inline-block">
-                  {{ asset.assetType }}
-                </span>
-              </td>
+    <button
+      type="button"
+      (click)="setActiveTab('SALES')"
+      [class.border-[#0f62fe]]="activeTab() === 'SALES'"
+      [class.text-[#0f62fe]]="activeTab() === 'SALES'"
+      [class.font-semibold]="activeTab() === 'SALES'"
+      [class.border-transparent]="activeTab() !== 'SALES'"
+      [class.text-[#525252]]="activeTab() !== 'SALES'"
+      class="px-5 py-3 text-sm border-b-2 hover:text-[#161616] transition-colors flex items-center gap-2 cursor-pointer"
+    >
+      <span>Historial de Ventas</span>
+      <span class="px-2 py-0.5 text-xs font-mono bg-[#f4f4f4] text-[#161616] rounded-full">
+        {{ totalSalesCount() }}
+      </span>
+    </button>
+  </div>
 
-              <!-- 3. Descripción -->
-              <td class="py-3.5 px-4 text-[#525252] leading-relaxed">
-                {{ asset.description || 'Sin descripción adicional' }}
-              </td>
+  <!-- TAB 1: INVENTARIO DE BIENES -->
+  @if (activeTab() === 'INVENTORY') {
+    <div class="space-y-4">
+      <!-- Search & Filter Controls -->
+      <div class="bg-[#f4f4f4] p-3 sm:p-4 border border-[#e0e0e0] flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        <!-- Search Bar -->
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#525252]">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="search"
+            [ngModel]="searchTerm()"
+            (ngModelChange)="onSearchChange($event)"
+            placeholder="Buscar por nombre, tipo o descripción en inventario..."
+            class="w-full h-10 pl-9 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none"
+          />
+        </div>
 
-              <!-- 4. Valor (USD) -->
-              <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#161616] whitespace-nowrap text-sm">
-                $ {{ asset.acquisitionValue | number:'1.2-2' }}
-              </td>
-            </tr>
-          }
-        }
-      </tbody>
-    </table>
-
-    <!-- Carbon Paginator Footer -->
-    <div class="px-4 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#525252] font-mono select-none">
-      <!-- Left: Items Per Page & Range Info -->
-      <div class="flex items-center gap-4 flex-wrap">
+        <!-- Type Filter -->
         <div class="flex items-center gap-2">
-          <span>Items por página:</span>
           <select
-            [value]="pageSize()"
-            (change)="onPageSizeChange($event)"
-            class="h-8 px-2 bg-white border border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
+            [ngModel]="selectedType()"
+            (ngModelChange)="onTypeChange($event)"
+            class="h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
           >
-            @for (opt of pageSizeOptions; track opt) {
-              <option [value]="opt">{{ opt }}</option>
+            <option value="ALL">Todos los Tipos</option>
+            @for (type of assetTypesList(); track type) {
+              <option [value]="type">{{ type }}</option>
             }
           </select>
         </div>
+      </div>
 
-        <div class="text-[#161616]">
-          @if (filteredAssets().length > 0) {
-            <span>{{ startItemIndex() }}-{{ endItemIndex() }} de {{ filteredAssets().length }} bienes</span>
-          } @else {
-            <span>0 bienes</span>
-          }
+      <!-- Data Table (Paginated) -->
+      <div class="border border-[#e0e0e0] overflow-x-auto bg-white shadow-sm">
+        <table class="w-full text-left border-collapse" aria-label="Tabla de Inventario de Bienes">
+          <thead>
+            <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
+              <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/4">Nombre</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/5">Tipo de Bien</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6] w-2/5">Descripción</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6] text-right w-1/6">Valor (USD)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#e0e0e0] text-xs">
+            @if (isLoading()) {
+              <tr>
+                <td colspan="4" class="py-12 text-center text-[#525252]">
+                  <div class="inline-flex items-center gap-2">
+                    <span class="w-4 h-4 border-2 border-[#0f62fe] border-t-transparent rounded-full animate-spin"></span>
+                    <span>Cargando inventario de bienes...</span>
+                  </div>
+                </td>
+              </tr>
+            } @else if (filteredAssets().length === 0) {
+              <tr>
+                <td colspan="4" class="py-12 text-center text-[#525252]">
+                  <p class="text-sm font-medium text-[#161616]">No se encontraron bienes en inventario</p>
+                  <p class="text-xs text-[#525252] mt-1">Registre un bien o ajuste los términos de búsqueda.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (asset of paginatedAssets(); track asset.id; let odd = $odd) {
+                <tr
+                  [class.bg-[#f4f4f4]]="odd"
+                  [class.bg-white]="!odd"
+                  class="hover:bg-[#e8f0fe] transition-colors"
+                >
+                  <!-- 1. Nombre -->
+                  <td class="py-3.5 px-4 font-semibold text-[#161616]">
+                    {{ asset.name }}
+                  </td>
+
+                  <!-- 2. Tipo de Bien -->
+                  <td class="py-3.5 px-4 text-[#525252]">
+                    <span class="px-2.5 py-1 bg-white border border-[#e0e0e0] text-xs font-medium text-[#161616] inline-block">
+                      {{ asset.assetType }}
+                    </span>
+                  </td>
+
+                  <!-- 3. Descripción -->
+                  <td class="py-3.5 px-4 text-[#525252] leading-relaxed">
+                    {{ asset.description || 'Sin descripción adicional' }}
+                  </td>
+
+                  <!-- 4. Valor (USD) -->
+                  <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#161616] whitespace-nowrap text-sm">
+                    $ {{ asset.acquisitionValue | number:'1.2-2' }}
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+
+        <!-- Carbon Paginator Footer -->
+        <div class="px-4 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#525252] font-mono select-none">
+          <!-- Left: Items Per Page & Range Info -->
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span>Items por página:</span>
+              <select
+                [value]="pageSize()"
+                (change)="onPageSizeChange($event)"
+                class="h-8 px-2 bg-white border border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-medium text-[#161616] outline-none cursor-pointer"
+              >
+                @for (opt of pageSizeOptions; track opt) {
+                  <option [value]="opt">{{ opt }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="text-[#161616]">
+              @if (filteredAssets().length > 0) {
+                <span>{{ startItemIndex() }}-{{ endItemIndex() }} de {{ filteredAssets().length }} bienes</span>
+              } @else {
+                <span>0 bienes</span>
+              }
+            </div>
+          </div>
+
+          <!-- Right: Page Controls -->
+          <div class="flex items-center gap-2">
+            <span class="mr-2">
+              Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong>
+            </span>
+
+            <button
+              type="button"
+              (click)="firstPage()"
+              [disabled]="currentPage() === 1"
+              aria-label="Primera Página"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="previousPage()"
+              [disabled]="currentPage() === 1"
+              aria-label="Página Anterior"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="nextPage()"
+              [disabled]="currentPage() === totalPages()"
+              aria-label="Página Siguiente"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="lastPage()"
+              [disabled]="currentPage() === totalPages()"
+              aria-label="Última Página"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 2: HISTORIAL DE VENTAS -->
+  @if (activeTab() === 'SALES') {
+    <div class="space-y-4">
+      <!-- Search Bar for Sales -->
+      <div class="bg-[#f4f4f4] p-3 sm:p-4 border border-[#e0e0e0] flex items-center justify-between gap-3">
+        <div class="relative flex-1">
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#525252]">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+          <input
+            type="search"
+            [ngModel]="salesSearchTerm()"
+            (ngModelChange)="onSalesSearchChange($event)"
+            placeholder="Buscar por bien, comprador, documento o motivo en el historial de ventas..."
+            class="w-full h-10 pl-9 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none"
+          />
         </div>
       </div>
 
-      <!-- Right: Page Controls -->
-      <div class="flex items-center gap-2">
-        <!-- Page Indicator -->
-        <span class="mr-2">
-          Página <strong>{{ currentPage() }}</strong> de <strong>{{ totalPages() }}</strong>
-        </span>
+      <!-- Sales Table (Carbon Zebra Striped) -->
+      <div class="border border-[#e0e0e0] overflow-x-auto bg-white shadow-sm">
+        <table class="w-full text-left border-collapse" aria-label="Tabla de Historial de Ventas">
+          <thead>
+            <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
+              <th class="py-3 px-4 border-b border-[#c6c6c6]">Bien Vendido</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6]">Tipo</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6]">Comprador / Empresa</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6] text-center">Fecha de Venta</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6]">Motivo / Observaciones</th>
+              <th class="py-3 px-4 border-b border-[#c6c6c6] text-right">Precio de Venta</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#e0e0e0] text-xs">
+            @if (isLoadingSales()) {
+              <tr>
+                <td colspan="6" class="py-12 text-center text-[#525252]">
+                  <div class="inline-flex items-center gap-2">
+                    <span class="w-4 h-4 border-2 border-[#0f62fe] border-t-transparent rounded-full animate-spin"></span>
+                    <span>Cargando historial de ventas...</span>
+                  </div>
+                </td>
+              </tr>
+            } @else if (filteredSales().length === 0) {
+              <tr>
+                <td colspan="6" class="py-12 text-center text-[#525252]">
+                  <p class="text-sm font-medium text-[#161616]">No hay registros de ventas en el historial</p>
+                  <p class="text-xs text-[#525252] mt-1">Las ventas procesadas se listarán aquí automáticamente.</p>
+                </td>
+              </tr>
+            } @else {
+              @for (sale of paginatedSales(); track sale.id; let odd = $odd) {
+                <tr
+                  [class.bg-[#f4f4f4]]="odd"
+                  [class.bg-white]="!odd"
+                  class="hover:bg-[#e8f0fe] transition-colors"
+                >
+                  <!-- Bien Vendido -->
+                  <td class="py-3.5 px-4 font-semibold text-[#161616]">
+                    {{ sale.assetName }}
+                  </td>
 
-        <!-- First Page Button -->
-        <button
-          type="button"
-          (click)="firstPage()"
-          [disabled]="currentPage() === 1"
-          aria-label="Primera Página"
-          class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-          </svg>
-        </button>
+                  <!-- Tipo -->
+                  <td class="py-3.5 px-4 text-[#525252]">
+                    <span class="px-2 py-0.5 bg-white border border-[#e0e0e0] text-[11px] font-medium">
+                      {{ sale.assetType }}
+                    </span>
+                  </td>
 
-        <!-- Previous Page Button -->
-        <button
-          type="button"
-          (click)="previousPage()"
-          [disabled]="currentPage() === 1"
-          aria-label="Página Anterior"
-          class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+                  <!-- Comprador -->
+                  <td class="py-3.5 px-4">
+                    <span class="font-medium text-[#161616] block">{{ sale.buyerName }}</span>
+                    @if (sale.buyerDocument) {
+                      <span class="text-[11px] font-mono text-[#525252]">{{ sale.buyerDocument }}</span>
+                    }
+                  </td>
 
-        <!-- Next Page Button -->
-        <button
-          type="button"
-          (click)="nextPage()"
-          [disabled]="currentPage() === totalPages()"
-          aria-label="Página Siguiente"
-          class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+                  <!-- Fecha de Venta -->
+                  <td class="py-3.5 px-4 text-center font-mono text-[#525252] whitespace-nowrap">
+                    {{ sale.saleDate }}
+                  </td>
 
-        <!-- Last Page Button -->
-        <button
-          type="button"
-          (click)="lastPage()"
-          [disabled]="currentPage() === totalPages()"
-          aria-label="Última Página"
-          class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
-        >
-          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-          </svg>
-        </button>
+                  <!-- Motivo / Observaciones -->
+                  <td class="py-3.5 px-4 text-[#525252] leading-relaxed max-w-xs">
+                    {{ sale.notes || 'Sin observaciones registradas' }}
+                  </td>
+
+                  <!-- Precio de Venta -->
+                  <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#198038] whitespace-nowrap text-sm">
+                    $ {{ sale.salePrice | number:'1.2-2' }} USD
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+
+        <!-- Sales Paginator Footer -->
+        <div class="px-4 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#525252] font-mono select-none">
+          <div class="text-[#161616]">
+            @if (filteredSales().length > 0) {
+              <span>Mostrando {{ salesStartItemIndex() }}-{{ salesEndItemIndex() }} de {{ filteredSales().length }} transacciones</span>
+            } @else {
+              <span>0 transacciones</span>
+            }
+          </div>
+
+          <div class="flex items-center gap-2">
+            <span class="mr-2">
+              Página <strong>{{ salesCurrentPage() }}</strong> de <strong>{{ totalSalesPages() }}</strong>
+            </span>
+
+            <button
+              type="button"
+              (click)="firstSalesPage()"
+              [disabled]="salesCurrentPage() === 1"
+              aria-label="Primera Página"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="previousSalesPage()"
+              [disabled]="salesCurrentPage() === 1"
+              aria-label="Página Anterior"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="nextSalesPage()"
+              [disabled]="salesCurrentPage() === totalSalesPages()"
+              aria-label="Página Siguiente"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button
+              type="button"
+              (click)="lastSalesPage()"
+              [disabled]="salesCurrentPage() === totalSalesPages()"
+              aria-label="Última Página"
+              class="w-8 h-8 flex items-center justify-center bg-white border border-[#8d8d8d] hover:bg-[#e0e0e0] disabled:opacity-40 disabled:cursor-not-allowed text-[#161616] transition-colors cursor-pointer"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+  }
 </div>
-
-<!-- Modal Placeholder para Venta de Bienes -->
-@if (activeModal()) {
-  <div class="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-    <div class="bg-white max-w-lg w-full border border-[#161616] p-6 shadow-xl space-y-4">
-      <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
-        <h3 class="text-base font-semibold text-[#161616]">
-          Módulo de Venta de Bienes
-        </h3>
-        <button
-          type="button"
-          (click)="closeModal()"
-          class="text-[#525252] hover:text-[#161616] text-xl font-bold px-2 cursor-pointer"
-        >
-          ×
-        </button>
-      </div>
-
-      <div class="bg-[#edf5ff] p-4 border-l-4 border-[#0f62fe] text-xs text-[#161616] leading-relaxed">
-        <p class="font-semibold text-[#0043ce] mb-1">
-          Formulario de Venta
-        </p>
-        <p>
-          Este botón está listo y conectado. Los campos y validaciones detalladas del formulario se integrarán en el siguiente paso según tus indicaciones.
-        </p>
-      </div>
-
-      <div class="flex justify-end gap-3 pt-2">
-        <button
-          type="button"
-          (click)="closeModal()"
-          class="h-10 px-5 bg-[#0f62fe] text-white text-xs font-medium hover:bg-[#0353e9] cursor-pointer"
-        >
-          Entendido / Cerrar
-        </button>
-      </div>
-    </div>
-  </div>
-}

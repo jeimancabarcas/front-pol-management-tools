@@ -21,6 +21,13 @@ export const routes: Routes = [
       ).then((m) => m.AssetRegisterComponent),
   },
   {
+    path: 'inventory/sale',
+    loadComponent: () =>
+      import(
+        './features/sales/pages/asset-sale/asset-sale'
+      ).then((m) => m.AssetSaleComponent),
+  },
+  {
     path: '**',
     redirectTo: 'inventory',
   },
