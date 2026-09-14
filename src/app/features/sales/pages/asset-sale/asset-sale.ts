@@ -161,11 +161,7 @@ export class AssetSaleComponent implements OnInit {
     this.saleRepository.create(salePayload).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.showSuccessNotification.set(true);
-
-        setTimeout(() => {
-          this.router.navigate(['/inventory']);
-        }, 1200);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error al registrar la venta:', err);

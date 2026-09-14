@@ -64,11 +64,7 @@ export class AssetRegisterComponent {
     this.assetRepository.create(dto).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.showSuccessNotification.set(true);
-
-        setTimeout(() => {
-          this.router.navigate(['/inventory']);
-        }, 1200);
+        this.router.navigate(['/inventory']);
       },
       error: (err) => {
         console.error('Error registering asset in backend:', err);
