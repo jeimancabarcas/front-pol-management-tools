@@ -1,0 +1,223 @@
+<div class="min-h-screen w-full flex flex-col lg:flex-row bg-[#f4f4f4] select-none">
+  <!-- Left Side: Enterprise Brand Hero Panel (Hidden on small screens, 45% on lg) -->
+  <div class="hidden lg:flex lg:w-5/12 bg-[#161616] text-white p-10 xl:p-14 flex-col justify-between relative overflow-hidden border-r border-[#262626]">
+    <!-- Background subtle geometric lines -->
+    <div class="absolute inset-0 opacity-10 pointer-events-none">
+      <svg class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="1" />
+          </pattern>
+        </defs>
+        <rect width="100%" height="100%" fill="url(#grid)" />
+      </svg>
+    </div>
+
+    <!-- Top: Brand Header -->
+    <div class="relative z-10">
+      <div class="flex items-baseline gap-2">
+        <span class="font-semibold text-xl tracking-tight text-white">AssetFlow</span>
+        <span class="text-[#525252]">|</span>
+        <span class="text-xs font-mono text-[#8d8d8d] uppercase tracking-wider">Enterprise Tools</span>
+      </div>
+    </div>
+
+    <!-- Middle: Value Proposition & Feature Highlights -->
+    <div class="relative z-10 my-auto py-12 space-y-8">
+      <div>
+        <span class="text-xs font-mono uppercase text-[#0f62fe] tracking-widest font-semibold block mb-2">
+          Plataforma Institucional
+        </span>
+        <h1 class="text-3xl xl:text-4xl font-light text-white tracking-tight leading-tight">
+          Gestión Integral de Inventarios &amp; Activos Comerciales
+        </h1>
+        <p class="mt-4 text-sm text-[#a8a8a8] leading-relaxed max-w-md">
+          Sistema centralizado para el control patrimonial, registro de altas, trazabilidad contable y desincorporación por venta.
+        </p>
+      </div>
+
+      <!-- Feature Bullet Points -->
+      <div class="space-y-4 pt-4 border-t border-[#262626]">
+        <div class="flex items-start gap-3 text-xs text-[#c6c6c6]">
+          <div class="p-1 bg-[#262626] text-[#0f62fe] mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <span class="font-semibold text-white block">Catálogo y Control de Bienes</span>
+            <span class="text-[#8d8d8d]">Registro estructurado con valoración patrimonial en tiempo real.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 text-xs text-[#c6c6c6]">
+          <div class="p-1 bg-[#262626] text-[#0f62fe] mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <span class="font-semibold text-white block">Módulo de Ventas y Liquidación</span>
+            <span class="text-[#8d8d8d]">Desincorporación atómica con soporte para múltiples bienes en una transacción.</span>
+          </div>
+        </div>
+
+        <div class="flex items-start gap-3 text-xs text-[#c6c6c6]">
+          <div class="p-1 bg-[#262626] text-[#0f62fe] mt-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <div>
+            <span class="font-semibold text-white block">Métricas y Dashboard Consolidado</span>
+            <span class="text-[#8d8d8d]">Auditoría de activos en stock, ingresos acumulados y balance general.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom: Footer Info -->
+    <div class="relative z-10 pt-6 border-t border-[#262626] flex items-center justify-between text-xs text-[#6f6f6f] font-mono">
+      <span>AssetFlow v1.0</span>
+    </div>
+  </div>
+
+  <!-- Right Side: Login Form Container (100% mobile, 55% lg) -->
+  <div class="flex-1 flex flex-col justify-between p-6 sm:p-10 lg:p-16 xl:p-24 bg-white min-h-screen lg:min-h-0 overflow-y-auto">
+    <!-- Top Mobile Brand (Visible only on mobile/tablet) -->
+    <div class="lg:hidden flex items-center justify-between pb-6 border-b border-[#e0e0e0] mb-8">
+      <span class="font-semibold text-lg tracking-tight text-[#161616]">AssetFlow</span>
+    </div>
+
+    <!-- Center Form Card -->
+    <div class="my-auto w-full max-w-md mx-auto space-y-8">
+      <!-- Section Header -->
+      <div class="space-y-2">
+        <span class="text-xs font-mono uppercase text-[#0f62fe] font-semibold tracking-wider block">
+          Acceso al Sistema
+        </span>
+        <h2 class="text-2xl sm:text-3xl font-normal text-[#161616] tracking-tight">
+          Iniciar Sesión
+        </h2>
+        <p class="text-xs sm:text-sm text-[#525252] leading-relaxed">
+          Ingrese su correo corporativo y contraseña para acceder a la gestión de bienes.
+        </p>
+      </div>
+
+      <!-- Error Notification Banner -->
+      @if (errorMessage()) {
+        <div class="bg-[#fff1f1] border-l-4 border-[#da1e28] p-4 flex items-center gap-3 text-xs text-[#161616]">
+          <svg class="w-5 h-5 text-[#da1e28] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+          </svg>
+          <span class="font-medium">{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Form -->
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="space-y-6">
+        <!-- Field 1: Correo Electrónico -->
+        <div class="space-y-1.5">
+          <label for="email" class="block text-xs font-semibold text-[#161616]">
+            Correo Electrónico Corporativo <span class="text-[#da1e28]">*</span>
+          </label>
+          <div class="relative">
+            <input
+              id="email"
+              type="email"
+              formControlName="email"
+              placeholder="usuario@empresa.com"
+              autocomplete="email"
+              [class.border-[#da1e28]]="emailControl?.invalid && emailControl?.touched"
+              class="w-full h-11 px-3.5 bg-[#f4f4f4] border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] focus:bg-white text-sm text-[#161616] placeholder-[#8d8d8d] outline-none transition-all"
+            />
+          </div>
+          @if (emailControl?.invalid && emailControl?.touched) {
+            <p class="text-xs text-[#da1e28] mt-1 flex items-center gap-1">
+              <span>Ingrese una dirección de correo válida.</span>
+            </p>
+          }
+        </div>
+
+        <!-- Field 2: Contraseña -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label for="password" class="block text-xs font-semibold text-[#161616]">
+              Contraseña <span class="text-[#da1e28]">*</span>
+            </label>
+          </div>
+          <div class="relative">
+            <input
+              id="password"
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+              [class.border-[#da1e28]]="passwordControl?.invalid && passwordControl?.touched"
+              class="w-full h-11 pl-3.5 pr-11 bg-[#f4f4f4] border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] focus:bg-white text-sm text-[#161616] placeholder-[#8d8d8d] outline-none transition-all font-mono"
+            />
+            <!-- Visibility Toggle Button -->
+            <button
+              type="button"
+              (click)="togglePasswordVisibility()"
+              aria-label="Alternar visibilidad de contraseña"
+              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#525252] hover:text-[#161616] transition-colors cursor-pointer"
+            >
+              @if (showPassword()) {
+                <!-- Eye Off Icon -->
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" />
+                </svg>
+              } @else {
+                <!-- Eye Icon -->
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+              }
+            </button>
+          </div>
+          @if (passwordControl?.invalid && passwordControl?.touched) {
+            <p class="text-xs text-[#da1e28] mt-1 flex items-center gap-1">
+              <span>La contraseña debe contener al menos 6 caracteres.</span>
+            </p>
+          }
+        </div>
+
+        <!-- Remember Me Checkbox -->
+        <div class="flex items-center justify-between text-xs pt-1">
+          <label class="flex items-center gap-2.5 text-[#525252] cursor-pointer select-none">
+            <input
+              type="checkbox"
+              formControlName="rememberMe"
+              class="w-4 h-4 rounded-none border border-[#8d8d8d] text-[#0f62fe] focus:ring-0 focus:ring-offset-0 cursor-pointer accent-[#0f62fe]"
+            />
+            <span>Recordar sesión en este equipo</span>
+          </label>
+        </div>
+
+        <!-- Submit Button -->
+        <button
+          type="submit"
+          [disabled]="isLoading()"
+          class="w-full h-12 bg-[#0f62fe] hover:bg-[#0353e9] active:bg-[#002d9c] disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+        >
+          @if (isLoading()) {
+            <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            <span>Autenticando credenciales...</span>
+          } @else {
+            <span>Ingresar al Sistema</span>
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+            </svg>
+          }
+        </button>
+      </form>
+    </div>
+
+    <!-- Bottom Copyright -->
+    <div class="pt-8 text-center text-xs text-[#8d8d8d] font-mono">
+      © 2026 AssetFlow Enterprise. Todos los derechos reservados.
+    </div>
+  </div>
+</div>
