@@ -6,6 +6,8 @@ import { ASSET_REPOSITORY } from './core/repositories/asset/asset.repository';
 import { AssetHttpRepository } from './core/repositories/asset/asset-http.repository';
 import { SALE_REPOSITORY } from './core/repositories/sale/sale.repository';
 import { SaleHttpRepository } from './core/repositories/sale/sale-http.repository';
+import { DASHBOARD_REPOSITORY } from './core/repositories/dashboard/dashboard.repository';
+import { DashboardHttpRepository } from './core/repositories/dashboard/dashboard-http.repository';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +21,10 @@ export const appConfig: ApplicationConfig = {
     {
       provide: SALE_REPOSITORY,
       useClass: SaleHttpRepository,
+    },
+    {
+      provide: DASHBOARD_REPOSITORY,
+      useClass: DashboardHttpRepository,
     },
   ],
 };

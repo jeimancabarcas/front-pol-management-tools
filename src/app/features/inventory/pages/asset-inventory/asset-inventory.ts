@@ -4,8 +4,10 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ASSET_REPOSITORY } from '../../../../core/repositories/asset/asset.repository';
 import { SALE_REPOSITORY } from '../../../../core/repositories/sale/sale.repository';
+import { DASHBOARD_REPOSITORY } from '../../../../core/repositories/dashboard/dashboard.repository';
 import { Asset } from '../../../../core/repositories/asset/models/asset.model';
 import { Sale } from '../../../../core/repositories/sale/models/sale.model';
+import { DashboardSummary } from '../../../../core/repositories/dashboard/models/dashboard.model';
 
 @Component({
   selector: 'app-asset-inventory',
@@ -16,9 +18,14 @@ import { Sale } from '../../../../core/repositories/sale/models/sale.model';
 export class AssetInventoryComponent implements OnInit {
   private readonly assetRepository = inject(ASSET_REPOSITORY);
   private readonly saleRepository = inject(SALE_REPOSITORY);
+  private readonly dashboardRepository = inject(DASHBOARD_REPOSITORY);
 
   // Active Tab: 'INVENTORY' | 'SALES' or showing both sections
   readonly activeTab = signal<'INVENTORY' | 'SALES'>('INVENTORY');
+
+  // Dashboard Metrics State
+  readonly dashboardSummary = signal<DashboardSummary | null>(null);
+  readonly isLoadingDashboard = signal<boolean>(true);
 
   // Asset Inventory State
   readonly assets = signal<Asset[]>([]);
@@ -79,9 +86,12 @@ export class AssetInventoryComponent implements OnInit {
     return Math.min(this.currentPage() * this.pageSize(), this.filteredAssets().length);
   });
 
-  readonly totalAssetsCount = computed(() => this.assets().length);
+  readonly totalAssetsCount = computed(() =>
+    this.dashboardSummary()?.inventoryAssetsCount ?? this.assets().length
+  );
 
   readonly totalCapitalValue = computed(() =>
+    this.dashboardSummary()?.inventoryAccumulatedValue ??
     this.assets().reduce((acc, curr) => acc + (Number(curr.acquisitionValue) || 0), 0)
   );
 
@@ -117,10 +127,12 @@ export class AssetInventoryComponent implements OnInit {
   });
 
   readonly totalSalesCount = computed(() =>
+    this.dashboardSummary()?.soldAssetsCount ??
     this.sales().reduce((acc, curr) => acc + (curr.items?.length || 1), 0)
   );
 
   readonly totalSalesRevenue = computed(() =>
+    this.dashboardSummary()?.salesRevenue ??
     this.sales().reduce((acc, curr) => {
       const saleTotal =
         curr.totalAmount ??
@@ -155,8 +167,23 @@ export class AssetInventoryComponent implements OnInit {
   }
 
   loadData(): void {
+    this.loadDashboardSummary();
     this.loadAssets();
     this.loadSales();
+  }
+
+  loadDashboardSummary(): void {
+    this.isLoadingDashboard.set(true);
+    this.dashboardRepository.getSummary().subscribe({
+      next: (data) => {
+        this.dashboardSummary.set(data);
+        this.isLoadingDashboard.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading dashboard summary:', err);
+        this.isLoadingDashboard.set(false);
+      },
+    });
   }
 
   loadAssets(): void {

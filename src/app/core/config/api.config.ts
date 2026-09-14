@@ -9,4 +9,5 @@ export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL', {
 export const API_ENDPOINTS = {
   assets: '/assets',
   sales: '/sales',
+  dashboardSummary: '/dashboard/summary',
 } as const;
