@@ -48,138 +48,144 @@
     </div>
   }
 
-  <!-- Form Layout: Form Section + Live Transaction Summary -->
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left 2 Cols: Multi-Item Sale Form -->
-    <div class="lg:col-span-2 space-y-6">
-      <!-- Section 1: Bienes Incluidos en la Venta -->
-      <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0] space-y-4">
-        <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
-          <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
-            1. Selección de Bienes a Vender
-          </h2>
-          <span class="text-xs font-mono text-[#0f62fe] font-semibold">
-            {{ totalItemsCount() }} bienes agregados
-          </span>
-        </div>
-
-        <!-- Asset Selector Row -->
-        @if (isLoadingAssets()) {
-          <div class="text-xs text-[#525252] py-2">Cargando catálogo de bienes...</div>
-        } @else if (availableAssets().length === 0) {
-          <div class="p-3 bg-[#fff1f1] border border-[#da1e28]/30 text-xs text-[#da1e28]">
-            No hay bienes registrados en el inventario para vender.
+  <!-- Form Layout: Form Section + Live Transaction Summary & Actions -->
+  <form [formGroup]="saleForm" (ngSubmit)="onSubmit()">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+      <!-- Left 2 Cols: Multi-Item Sale Form -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Section 1: Bienes Incluidos en la Venta -->
+        <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0] space-y-4">
+          <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
+            <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
+              1. Selección de Bienes a Vender
+            </h2>
+            <span class="text-xs font-mono text-[#0f62fe] font-semibold">
+              {{ totalItemsCount() }} bienes agregados
+            </span>
           </div>
-        } @else {
-          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <div class="relative flex-1">
-              <select
-                [value]="selectedAssetIdToAdd()"
-                (change)="onSelectAssetChange($event)"
-                class="w-full h-10 px-3 pr-8 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none appearance-none cursor-pointer"
-              >
-                <option value="">-- Seleccione un bien del inventario --</option>
-                @for (asset of selectableAssets(); track asset.id) {
-                  <option [value]="asset.id">
-                    {{ asset.name }} ({{ asset.type || asset.assetType }}) — Valor: $ {{ asset.acquisitionValue | number:'1.2-2' }} COP
-                  </option>
-                }
-              </select>
-              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#525252]">
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
+
+          <!-- Asset Selector Row -->
+          @if (isLoadingAssets()) {
+            <div class="text-xs text-[#525252] py-2">Cargando catálogo de bienes...</div>
+          } @else if (availableAssets().length === 0) {
+            <div class="p-3 bg-[#fff1f1] border border-[#da1e28]/30 text-xs text-[#da1e28]">
+              No hay bienes registrados en el inventario para vender.
             </div>
+          } @else {
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div class="relative flex-1">
+                <select
+                  [value]="selectedAssetIdToAdd()"
+                  (change)="onSelectAssetChange($event)"
+                  class="w-full h-10 px-3 pr-8 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none appearance-none cursor-pointer"
+                >
+                  <option value="">-- Seleccione un bien del inventario --</option>
+                  @for (asset of selectableAssets(); track asset.id) {
+                    <option [value]="asset.id">
+                      {{ asset.name }} ({{ asset.type || asset.assetType }}) — Valor: $ {{ asset.acquisitionValue | number:'1.2-2' }} COP
+                    </option>
+                  }
+                </select>
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#525252]">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+              </div>
 
-            <button
-              type="button"
-              (click)="addAssetToSale()"
-              [disabled]="!selectedAssetIdToAdd()"
-              class="h-10 px-5 bg-[#0f62fe] hover:bg-[#0353e9] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
-            >
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              <button
+                type="button"
+                (click)="addAssetToSale()"
+                [disabled]="!selectedAssetIdToAdd()"
+                class="h-10 px-5 bg-[#0f62fe] hover:bg-[#0353e9] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+              >
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Agregar a la Venta</span>
+              </button>
+            </div>
+          }
+
+          <!-- Items Table with individual price inputs -->
+          @if (selectedItems().length === 0) {
+            <div class="py-8 text-center bg-white border border-dashed border-[#8d8d8d] text-xs text-[#525252] p-4">
+              <svg class="w-8 h-8 mx-auto mb-2 text-[#8d8d8d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              <span>Agregar a la Venta</span>
-            </button>
-          </div>
-        }
-
-        <!-- Items Table with individual price inputs -->
-        @if (selectedItems().length === 0) {
-          <div class="py-8 text-center bg-white border border-dashed border-[#8d8d8d] text-xs text-[#525252] p-4">
-            <svg class="w-8 h-8 mx-auto mb-2 text-[#8d8d8d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <p class="font-medium text-[#161616]">Lista de venta vacía</p>
-            <p class="text-[11px] text-[#525252] mt-0.5">Seleccione un bien arriba y haga clic en <strong>Agregar a la Venta</strong>.</p>
-          </div>
-        } @else {
-          <div class="border border-[#e0e0e0] bg-white overflow-x-auto">
-            <table class="w-full text-left border-collapse" aria-label="Bienes seleccionados para la venta">
-              <thead>
-                <tr class="bg-[#e0e0e0] text-[#161616] text-[11px] font-semibold uppercase tracking-wider font-mono">
-                  <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Bien / Denominación</th>
-                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right">Valor Original</th>
-                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right w-44">Precio de Venta (COP) *</th>
-                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-center w-16">Acción</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-[#e0e0e0] text-xs">
-                @for (item of selectedItems(); track item.assetId) {
-                  <tr class="hover:bg-[#f4f4f4] transition-colors">
-                    <!-- Bien / Tipo -->
-                    <td class="py-3 px-3">
-                      <span class="font-semibold text-[#161616] block text-xs">{{ item.assetName }}</span>
-                      <span class="text-[11px] text-[#525252] font-mono">{{ item.assetType }}</span>
-                    </td>
-
-                    <!-- Valor Original -->
-                    <td class="py-3 px-3 text-right font-mono text-[#525252] whitespace-nowrap">
-                      $ {{ item.originalValue | number:'1.2-2' }}
-                    </td>
-
-                    <!-- Precio de Venta Individual (Editable) -->
-                    <td class="py-3 px-3 text-right">
-                      <div class="relative inline-block w-36">
-                        <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs font-semibold text-[#525252] pointer-events-none">
-                          $
-                        </span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          min="0.01"
-                          [value]="item.salePrice"
-                          (input)="updateItemPrice(item.assetId, $event)"
-                          class="w-full h-9 pl-6 pr-2 bg-white border border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-mono font-semibold text-[#161616] text-right outline-none transition-colors"
-                        />
-                      </div>
-                    </td>
-
-                    <!-- Eliminar Item -->
-                    <td class="py-3 px-3 text-center">
-                      <button
-                        type="button"
-                        (click)="removeItem(item.assetId)"
-                        title="Quitar de la venta"
-                        class="p-1.5 text-[#da1e28] hover:bg-[#fff1f1] rounded transition-colors cursor-pointer"
-                      >
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    </td>
+              <p class="font-medium text-[#161616]">Lista de venta vacía</p>
+              <p class="text-[11px] text-[#525252] mt-0.5">Seleccione un bien arriba y haga clic en <strong>Agregar a la Venta</strong>.</p>
+            </div>
+          } @else {
+            <div class="border border-[#e0e0e0] bg-white overflow-x-auto">
+              <table class="w-full text-left border-collapse" aria-label="Bienes seleccionados para la venta">
+                <thead>
+                  <tr class="bg-[#e0e0e0] text-[#161616] text-[11px] font-semibold uppercase tracking-wider font-mono">
+                    <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Bien / Denominación</th>
+                    <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right">Valor Original</th>
+                    <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right w-44">Precio de Venta (COP) *</th>
+                    <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-center w-16">Acción</th>
                   </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-        }
-      </section>
+                </thead>
+                <tbody class="divide-y divide-[#e0e0e0] text-xs">
+                  @for (item of selectedItems(); track item.assetId) {
+                    <tr class="hover:bg-[#f4f4f4] transition-colors">
+                      <!-- Bien / Tipo -->
+                      <td class="py-3 px-3">
+                        <span class="font-semibold text-[#161616] block text-xs">{{ item.assetName }}</span>
+                        <span class="text-[11px] text-[#525252] font-mono">{{ item.assetType }}</span>
+                      </td>
 
-      <!-- Section 2: Datos del Comprador y Transacción -->
-      <form [formGroup]="saleForm" (ngSubmit)="onSubmit()" class="space-y-6">
+                      <!-- Valor Original -->
+                      <td class="py-3 px-3 text-right font-mono text-[#525252] whitespace-nowrap">
+                        $ {{ item.originalValue | number:'1.2-2' }}
+                      </td>
+
+                      <!-- Input Precio Venta Individual -->
+                      <td class="py-2 px-3 text-right">
+                        <div class="relative inline-block w-full">
+                          <span class="absolute inset-y-0 left-0 pl-2 flex items-center text-xs font-semibold text-[#525252] pointer-events-none">
+                            $
+                          </span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            [value]="item.salePrice"
+                            (input)="updateItemPrice(item.assetId, $event)"
+                            [class.border-[#da1e28]]="item.salePrice <= 0"
+                            class="w-full h-8 pl-6 pr-2 bg-[#f4f4f4] focus:bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-mono text-right text-[#161616] outline-none transition-colors"
+                            placeholder="0.00"
+                            aria-label="Precio de venta individual"
+                          />
+                        </div>
+                        @if (item.salePrice <= 0) {
+                          <span class="text-[10px] text-[#da1e28] block text-right mt-0.5">Precio requerido > 0</span>
+                        }
+                      </td>
+
+                      <!-- Botón Quitar -->
+                      <td class="py-2 px-3 text-center">
+                        <button
+                          type="button"
+                          (click)="removeItem(item.assetId)"
+                          title="Quitar bien de la lista"
+                          class="p-1.5 text-[#da1e28] hover:bg-[#fff1f1] transition-colors cursor-pointer"
+                        >
+                          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </section>
+
+        <!-- Section 2: Datos del Comprador y Transacción -->
         <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0]">
           <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-5">
             <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
@@ -226,15 +232,15 @@
                 />
                 @if (buyerDocumentControl?.invalid && buyerDocumentControl?.touched) {
                   <p class="text-xs text-[#da1e28] mt-1">
-                    El documento del comprador es obligatorio.
+                    El documento o NIT es obligatorio.
                   </p>
                 }
               </div>
             </div>
 
-            <!-- Grid: Fecha & Motivo de Venta -->
+            <!-- Grid: Fecha & Justificación -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Fecha de Venta -->
+              <!-- Fecha -->
               <div>
                 <label for="saleDate" class="block text-xs font-semibold text-[#161616] mb-1.5">
                   Fecha de la Venta <span class="text-[#da1e28]">*</span>
@@ -291,20 +297,84 @@
             <span>Al confirmar, todos los <strong>{{ totalItemsCount() }}</strong> bienes seleccionados serán desincorporados del inventario activo y quedarán registrados con sus valores individuales en el historial comercial.</span>
           </div>
         </div>
+      </div>
 
-        <!-- Action Buttons -->
-        <div class="flex items-center gap-3 justify-end">
-          <button
-            type="button"
-            (click)="cancel()"
-            class="h-12 px-6 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors cursor-pointer"
-          >
-            Cancelar
-          </button>
+      <!-- Right 1 Col: Transaction Live Summary + Action Buttons -->
+      <div class="sticky top-20 space-y-4">
+        <!-- Summary Card -->
+        <div class="bg-[#f4f4f4] p-5 border border-[#e0e0e0]">
+          <!-- Summary Header -->
+          <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-4">
+            <div class="flex items-center gap-2 text-xs font-semibold text-[#da1e28] uppercase font-mono">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+              </svg>
+              <span>Resumen de Venta</span>
+            </div>
+            <span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#fff1f1] text-[#da1e28] border border-[#da1e28]/30 uppercase">
+              {{ totalItemsCount() }} items
+            </span>
+          </div>
+
+          <!-- Breakdown List -->
+          @if (selectedItems().length > 0) {
+            <div class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
+              @for (item of selectedItems(); track item.assetId) {
+                <div class="p-2 bg-white border border-[#e0e0e0] text-xs">
+                  <div class="font-semibold text-[#161616] truncate">{{ item.assetName }}</div>
+                  <div class="flex items-center justify-between text-[11px] text-[#525252] font-mono mt-0.5">
+                    <span>{{ item.assetType }}</span>
+                    <span class="font-semibold text-[#198038]">$ {{ item.salePrice | number:'1.2-2' }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+
+            <div class="border-t border-[#e0e0e0] py-3 space-y-2 text-xs">
+              <div class="flex items-center justify-between text-[#525252]">
+                <span>Costo en Libros Total:</span>
+                <span class="font-mono font-semibold text-[#161616]">$ {{ totalOriginalValue() | number:'1.2-2' }}</span>
+              </div>
+              <div class="flex items-center justify-between text-[#525252]">
+                <span>Total Liquidación:</span>
+                <span class="font-mono font-semibold text-[#198038]">$ {{ totalSaleAmount() | number:'1.2-2' }}</span>
+              </div>
+            </div>
+          } @else {
+            <div class="py-6 text-center text-xs text-[#525252] italic border-b border-[#e0e0e0] mb-4">
+              Agregue bienes para ver el resumen detallado.
+            </div>
+          }
+
+          <!-- Total Sale Box -->
+          <div class="pt-2">
+            <div class="flex items-center justify-between text-xs text-[#525252] mb-1">
+              <span>Gran Total Ingreso</span>
+              <span class="text-[#198038] font-semibold">+ Ingreso Comercial</span>
+            </div>
+            <div class="text-2xl font-mono font-semibold text-[#161616]">
+              $ {{ totalSaleAmount() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">COP</span>
+            </div>
+          </div>
+
+          <!-- Buyer preview -->
+          @if (saleForm.get('buyerName')?.value) {
+            <div class="mt-4 pt-3 border-t border-[#e0e0e0] text-xs text-[#525252]">
+              <span class="font-mono uppercase text-[10px] block mb-0.5 text-[#8d8d8d]">Comprador Registrado:</span>
+              <span class="font-semibold text-[#161616] block">{{ saleForm.get('buyerName')?.value }}</span>
+              @if (saleForm.get('buyerDocument')?.value) {
+                <span class="text-[11px] font-mono text-[#525252]">{{ saleForm.get('buyerDocument')?.value }}</span>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Action Buttons debajo del resumen de venta -->
+        <div class="flex flex-col gap-2.5">
           <button
             type="submit"
             [disabled]="isSubmitting() || selectedItems().length === 0"
-            class="h-12 px-8 bg-[#da1e28] hover:bg-[#ba1b23] active:bg-[#750e13] disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+            class="w-full h-11 bg-[#da1e28] hover:bg-[#ba1b23] active:bg-[#750e13] disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
           >
             @if (isSubmitting()) {
               <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -316,78 +386,15 @@
               </svg>
             }
           </button>
+          <button
+            type="button"
+            (click)="cancel()"
+            class="w-full h-11 border border-[#161616] hover:bg-[#161616] hover:text-white text-[#161616] text-sm font-medium transition-colors flex items-center justify-center cursor-pointer"
+          >
+            Cancelar
+          </button>
         </div>
-      </form>
-    </div>
-
-    <!-- Right 1 Col: Transaction Live Summary -->
-    <div>
-      <div class="bg-[#f4f4f4] p-5 border border-[#e0e0e0] sticky top-20">
-        <!-- Summary Header -->
-        <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-4">
-          <div class="flex items-center gap-2 text-xs font-semibold text-[#da1e28] uppercase font-mono">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
-            <span>Resumen de Venta</span>
-          </div>
-          <span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#fff1f1] text-[#da1e28] border border-[#da1e28]/30 uppercase">
-            {{ totalItemsCount() }} items
-          </span>
-        </div>
-
-        <!-- Breakdown List -->
-        @if (selectedItems().length > 0) {
-          <div class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
-            @for (item of selectedItems(); track item.assetId) {
-              <div class="p-2 bg-white border border-[#e0e0e0] text-xs">
-                <div class="font-semibold text-[#161616] truncate">{{ item.assetName }}</div>
-                <div class="flex items-center justify-between text-[11px] text-[#525252] font-mono mt-0.5">
-                  <span>{{ item.assetType }}</span>
-                  <span class="font-semibold text-[#198038]">$ {{ item.salePrice | number:'1.2-2' }}</span>
-                </div>
-              </div>
-            }
-          </div>
-
-          <div class="border-t border-[#e0e0e0] py-3 space-y-2 text-xs">
-            <div class="flex items-center justify-between text-[#525252]">
-              <span>Costo en Libros Total:</span>
-              <span class="font-mono font-semibold text-[#161616]">$ {{ totalOriginalValue() | number:'1.2-2' }}</span>
-            </div>
-            <div class="flex items-center justify-between text-[#525252]">
-              <span>Total Liquidación:</span>
-              <span class="font-mono font-semibold text-[#198038]">$ {{ totalSaleAmount() | number:'1.2-2' }}</span>
-            </div>
-          </div>
-        } @else {
-          <div class="py-6 text-center text-xs text-[#525252] italic border-b border-[#e0e0e0] mb-4">
-            Agregue bienes para ver el resumen detallado.
-          </div>
-        }
-
-        <!-- Total Sale Box -->
-        <div class="pt-2">
-          <div class="flex items-center justify-between text-xs text-[#525252] mb-1">
-            <span>Gran Total Ingreso</span>
-            <span class="text-[#198038] font-semibold">+ Ingreso Comercial</span>
-          </div>
-          <div class="text-2xl font-mono font-semibold text-[#161616]">
-            $ {{ totalSaleAmount() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">COP</span>
-          </div>
-        </div>
-
-        <!-- Buyer preview -->
-        @if (saleForm.get('buyerName')?.value) {
-          <div class="mt-4 pt-3 border-t border-[#e0e0e0] text-xs text-[#525252]">
-            <span class="font-mono uppercase text-[10px] block mb-0.5 text-[#8d8d8d]">Comprador Registrado:</span>
-            <span class="font-semibold text-[#161616] block">{{ saleForm.get('buyerName')?.value }}</span>
-            @if (saleForm.get('buyerDocument')?.value) {
-              <span class="text-[11px] font-mono text-[#525252]">{{ saleForm.get('buyerDocument')?.value }}</span>
-            }
-          </div>
-        }
       </div>
     </div>
-  </div>
+  </form>
 </div>
