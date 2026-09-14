@@ -138,7 +138,7 @@ export class AssetSaleComponent implements OnInit {
     // Verify all item prices are > 0
     const hasInvalidPrice = this.selectedItems().some((i) => i.salePrice <= 0);
     if (hasInvalidPrice) {
-      this.errorMessage.set('Todos los bienes deben tener un precio de venta mayor a $ 0.00 USD.');
+      this.errorMessage.set('Todos los bienes deben tener un precio de venta mayor a $ 0.00 COP.');
       return;
     }
 

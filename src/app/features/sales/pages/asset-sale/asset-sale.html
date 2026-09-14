@@ -81,7 +81,7 @@
                 <option value="">-- Seleccione un bien del inventario --</option>
                 @for (asset of selectableAssets(); track asset.id) {
                   <option [value]="asset.id">
-                    {{ asset.name }} ({{ asset.type || asset.assetType }}) — Valor: $ {{ asset.acquisitionValue | number:'1.2-2' }} USD
+                    {{ asset.name }} ({{ asset.type || asset.assetType }}) — Valor: $ {{ asset.acquisitionValue | number:'1.2-2' }} COP
                   </option>
                 }
               </select>
@@ -122,7 +122,7 @@
                 <tr class="bg-[#e0e0e0] text-[#161616] text-[11px] font-semibold uppercase tracking-wider font-mono">
                   <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Bien / Denominación</th>
                   <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right">Valor Original</th>
-                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right w-44">Precio de Venta (USD) *</th>
+                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right w-44">Precio de Venta (COP) *</th>
                   <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-center w-16">Acción</th>
                 </tr>
               </thead>
@@ -373,7 +373,7 @@
             <span class="text-[#198038] font-semibold">+ Ingreso Comercial</span>
           </div>
           <div class="text-2xl font-mono font-semibold text-[#161616]">
-            $ {{ totalSaleAmount() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+            $ {{ totalSaleAmount() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">COP</span>
           </div>
         </div>
 

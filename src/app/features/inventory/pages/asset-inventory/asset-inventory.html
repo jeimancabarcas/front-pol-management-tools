@@ -58,7 +58,7 @@
     <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
       <span class="text-xs font-mono uppercase text-[#525252] block">Valor Activo Acumulado</span>
       <div class="text-2xl font-mono font-semibold text-[#161616] mt-1">
-        $ {{ totalCapitalValue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+        $ {{ totalCapitalValue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">COP</span>
       </div>
       <span class="text-[11px] text-[#0f62fe] font-semibold mt-1 block">Capital en inventario</span>
     </div>
@@ -76,7 +76,7 @@
     <div class="bg-[#f4f4f4] p-4 border border-[#e0e0e0]">
       <span class="text-xs font-mono uppercase text-[#525252] block">Ingresos por Ventas</span>
       <div class="text-2xl font-mono font-semibold text-[#198038] mt-1">
-        $ {{ totalSalesRevenue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+        $ {{ totalSalesRevenue() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">COP</span>
       </div>
       <span class="text-[11px] text-[#198038] font-semibold mt-1 block">Total comercializado</span>
     </div>
@@ -163,7 +163,7 @@
                 <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/4">Nombre</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6] w-1/5">Tipo de Bien</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6] w-2/5">Descripción</th>
-                <th class="py-3 px-4 border-b border-[#c6c6c6] text-right w-1/6">Valor (USD)</th>
+                <th class="py-3 px-4 border-b border-[#c6c6c6] text-right w-1/6">Valor (COP)</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#e0e0e0] text-xs">
@@ -207,7 +207,7 @@
                       {{ asset.description || 'Sin descripción adicional' }}
                     </td>
 
-                    <!-- 4. Valor (USD) -->
+                    <!-- 4. Valor (COP) -->
                     <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#161616] whitespace-nowrap text-sm">
                       $ {{ asset.acquisitionValue | number:'1.2-2' }}
                     </td>
@@ -403,7 +403,7 @@
 
                     <!-- Total Transacción -->
                     <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#198038] whitespace-nowrap text-sm">
-                      $ {{ (sale.totalAmount || sale.salePrice || 0) | number:'1.2-2' }} USD
+                      $ {{ (sale.totalAmount || sale.salePrice || 0) | number:'1.2-2' }} COP
                     </td>
                   </tr>
                 }
@@ -573,7 +573,7 @@
                             }
                           </td>
                           <td class="py-2.5 px-3 font-mono font-semibold text-right text-[#198038] whitespace-nowrap">
-                            $ {{ item.salePrice | number:'1.2-2' }} USD
+                            $ {{ item.salePrice | number:'1.2-2' }} COP
                           </td>
                         </tr>
                       }
@@ -587,7 +587,7 @@
                           </span>
                         </td>
                         <td class="py-2.5 px-3 font-mono font-semibold text-right text-[#198038] whitespace-nowrap">
-                          $ {{ (modalSale.salePrice || modalSale.totalAmount || 0) | number:'1.2-2' }} USD
+                          $ {{ (modalSale.salePrice || modalSale.totalAmount || 0) | number:'1.2-2' }} COP
                         </td>
                       </tr>
                     }
@@ -600,7 +600,7 @@
             <div class="bg-[#defbe6] p-4 border border-[#198038]/30 flex items-center justify-between">
               <span class="text-xs font-semibold text-[#0e6027] uppercase font-mono">Total de la Transacción:</span>
               <span class="text-xl font-mono font-semibold text-[#0e6027]">
-                $ {{ (modalSale.totalAmount || modalSale.salePrice || 0) | number:'1.2-2' }} USD
+                $ {{ (modalSale.totalAmount || modalSale.salePrice || 0) | number:'1.2-2' }} COP
               </span>
             </div>
           </div>
