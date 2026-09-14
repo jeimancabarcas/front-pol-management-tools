@@ -71,7 +71,7 @@
                     <option value="" disabled>-- Seleccione un bien a dar de baja --</option>
                     @for (asset of assets(); track asset.id) {
                       <option [value]="asset.id">
-                        {{ asset.name }} ({{ asset.assetType }}) - Val: $ {{ asset.acquisitionValue | number:'1.2-2' }} USD
+                        {{ asset.name }} ({{ asset.type || asset.assetType }}) - Val: $ {{ asset.acquisitionValue | number:'1.2-2' }} USD
                       </option>
                     }
                   </select>
@@ -253,7 +253,7 @@
               {{ asset.name }}
             </h3>
             <span class="text-xs text-[#525252] font-mono block mt-0.5">
-              Tipo: {{ asset.assetType }}
+              Tipo: {{ asset.type || asset.assetType }}
             </span>
           </div>
 

@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ASSET_REPOSITORY } from '../../../../core/repositories/asset/asset.repository';
-import { Asset } from '../../../../core/repositories/asset/models/asset.model';
+import { CreateAssetDto } from '../../../../core/repositories/asset/models/asset.model';
 
 @Component({
   selector: 'app-asset-register',
@@ -18,13 +18,13 @@ export class AssetRegisterComponent {
 
   readonly isSubmitting = signal<boolean>(false);
   readonly showSuccessNotification = signal<boolean>(false);
+  readonly errorMessage = signal<string | null>(null);
 
   readonly registerForm: FormGroup = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     acquisitionValue: [null, [Validators.required, Validators.min(0.01)]],
     description: ['', [Validators.maxLength(300)]],
     assetType: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(60)]],
-    location: ['Edificio Central - Sede Principal'],
   });
 
   get nameControl() {
@@ -50,26 +50,18 @@ export class AssetRegisterComponent {
     }
 
     this.isSubmitting.set(true);
+    this.errorMessage.set(null);
 
     const formValues = this.registerForm.value;
-    const randomTag = `ACT-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`;
 
-    const newAsset: Omit<Asset, 'id'> = {
+    const dto: CreateAssetDto = {
       name: formValues.name.trim(),
+      type: formValues.assetType.trim(),
       acquisitionValue: Number(formValues.acquisitionValue),
-      description: formValues.description ? formValues.description.trim() : '',
-      assetType: formValues.assetType.trim(),
-      category: formValues.assetType.trim(),
-      location: formValues.location || 'Edificio Central - Sede Principal',
-      currency: 'USD',
-      status: 'Available',
-      custodian: 'Sin Asignar',
-      assetTag: randomTag,
-      registrationDate: new Date().toISOString().split('T')[0],
-      batchCode: `ACT-${new Date().getFullYear()}-Q1`,
+      description: formValues.description ? formValues.description.trim() : undefined,
     };
 
-    this.assetRepository.create(newAsset).subscribe({
+    this.assetRepository.create(dto).subscribe({
       next: () => {
         this.isSubmitting.set(false);
         this.showSuccessNotification.set(true);
@@ -79,7 +71,10 @@ export class AssetRegisterComponent {
         }, 1200);
       },
       error: (err) => {
-        console.error('Error registering asset:', err);
+        console.error('Error registering asset in backend:', err);
+        this.errorMessage.set(
+          err?.error?.message || 'Error al registrar el bien. Verifique los datos e intente nuevamente.'
+        );
         this.isSubmitting.set(false);
       },
     });

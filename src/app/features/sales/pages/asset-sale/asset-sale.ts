@@ -104,7 +104,7 @@ export class AssetSaleComponent implements OnInit {
       .create({
         assetId: asset.id,
         assetName: asset.name,
-        assetType: asset.assetType,
+        assetType: asset.type || asset.assetType || 'General',
         originalValue: asset.acquisitionValue,
         salePrice: Number(values.salePrice),
         buyerName: values.buyerName.trim(),

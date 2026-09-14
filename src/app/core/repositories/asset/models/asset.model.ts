@@ -1,17 +1,21 @@
-export type AssetStatus = 'Available' | 'Assigned' | 'Maintenance' | 'Sold';
-
 export interface Asset {
   id: string;
-  assetTag: string;
   name: string;
-  category: string;
-  assetType: string;
-  description?: string;
-  location: string;
+  type: string;
   acquisitionValue: number;
-  currency: string;
-  status: AssetStatus;
-  custodian?: string;
-  registrationDate: string;
-  batchCode?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  // Optional aliases for backward compatibility if needed
+  assetType?: string;
+  category?: string;
 }
+
+export interface CreateAssetDto {
+  name: string;
+  type: string;
+  acquisitionValue: number;
+  description?: string;
+}
+
+export interface UpdateAssetDto extends Partial<CreateAssetDto> {}

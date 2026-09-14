@@ -46,13 +46,14 @@ export class AssetInventoryComponent implements OnInit {
     const type = this.selectedType();
 
     return this.assets().filter((item) => {
+      const assetType = (item.type || item.assetType || '').toLowerCase();
       const matchSearch =
         !term ||
         item.name.toLowerCase().includes(term) ||
-        item.assetType.toLowerCase().includes(term) ||
+        assetType.includes(term) ||
         (item.description && item.description.toLowerCase().includes(term));
 
-      const matchType = type === 'ALL' || item.assetType.toLowerCase() === type.toLowerCase();
+      const matchType = type === 'ALL' || assetType === type.toLowerCase();
 
       return matchSearch && matchType;
     });
@@ -81,11 +82,11 @@ export class AssetInventoryComponent implements OnInit {
   readonly totalAssetsCount = computed(() => this.assets().length);
 
   readonly totalCapitalValue = computed(() =>
-    this.assets().reduce((acc, curr) => acc + curr.acquisitionValue, 0)
+    this.assets().reduce((acc, curr) => acc + (Number(curr.acquisitionValue) || 0), 0)
   );
 
   readonly assetTypesList = computed(() => {
-    const set = new Set(this.assets().map((a) => a.assetType));
+    const set = new Set(this.assets().map((a) => a.type || a.assetType || ''));
     return Array.from(set).filter(Boolean);
   });
 
