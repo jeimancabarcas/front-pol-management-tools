@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -11,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class LoginComponent {
   private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly showPassword = signal<boolean>(false);
@@ -44,10 +46,22 @@ export class LoginComponent {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    // Transition to inventory after validation
-    setTimeout(() => {
-      this.isLoading.set(false);
-      this.router.navigate(['/inventory']);
-    }, 700);
+    const { email, password } = this.loginForm.value;
+
+    this.authService.login({ email: email.trim(), password }).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        this.router.navigate(['/inventory']);
+      },
+      error: (err) => {
+        console.error('Error al iniciar sesión:', err);
+        const errorMsg =
+          err.status === 401
+            ? 'Credenciales inválidas o cuenta inactiva.'
+            : err.error?.message || 'Error al autenticar. Verifique sus credenciales.';
+        this.errorMessage.set(errorMsg);
+        this.isLoading.set(false);
+      },
+    });
   }
 }

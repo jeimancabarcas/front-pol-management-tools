@@ -10,4 +10,5 @@ export const API_ENDPOINTS = {
   assets: '/assets',
   sales: '/sales',
   dashboardSummary: '/dashboard/summary',
+  authLogin: '/auth/login',
 } as const;
