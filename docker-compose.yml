@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  # =======================================================
+  # Frontend Service: Angular 22 SPA (Nginx)
+  # =======================================================
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pol-frontend
+    restart: unless-stopped
+    ports:
+      - "${FRONTEND_PORT:-80}:80"

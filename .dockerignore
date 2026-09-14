@@ -1,0 +1,15 @@
+node_modules
+dist
+.angular
+.git
+.gitignore
+.vscode
+.agents
+npm-debug.log
+Dockerfile
+docker-compose*.yml
+.editorconfig
+.prettierrc
+README.md
+DESIGN.md
+GUIDELINES.md
