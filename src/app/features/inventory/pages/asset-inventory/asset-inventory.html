@@ -332,10 +332,10 @@
           <table class="w-full min-w-[720px] text-left border-collapse" aria-label="Tabla de Historial de Ventas">
             <thead>
               <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
-                <th class="py-3 px-4 border-b border-[#c6c6c6]">Bienes Vendidos &amp; Precios Unitarios</th>
+                <th class="py-3 px-4 border-b border-[#c6c6c6]">Bienes Vendidos</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6]">Comprador / Empresa</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6] text-center">Fecha de Venta</th>
-                <th class="py-3 px-4 border-b border-[#c6c6c6]">Motivo / Observaciones</th>
+                <th class="py-3 px-4 border-b border-[#c6c6c6]">Motivo / Justificación</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6] text-right">Total Transacción</th>
               </tr>
             </thead>
@@ -361,32 +361,26 @@
                   <tr
                     [class.bg-[#f4f4f4]]="odd"
                     [class.bg-white]="!odd"
-                    class="hover:bg-[#e8f0fe] transition-colors align-top"
+                    class="hover:bg-[#e8f0fe] transition-colors"
                   >
-                    <!-- Bienes Vendidos & Precios Unitarios -->
-                    <td class="py-3.5 px-4 min-w-[240px]">
-                      @if (sale.items && sale.items.length > 0) {
-                        <div class="space-y-1.5">
-                          @for (item of sale.items; track item.assetId) {
-                            <div class="flex items-center justify-between gap-3 bg-white p-2 border border-[#e0e0e0]">
-                              <div>
-                                <span class="font-semibold text-[#161616] block">{{ item.assetName }}</span>
-                                <span class="text-[10px] font-mono text-[#525252]">{{ item.assetType }}</span>
-                              </div>
-                              <span class="font-mono text-[#198038] font-semibold whitespace-nowrap text-xs">
-                                $ {{ item.salePrice | number:'1.2-2' }} USD
-                              </span>
-                            </div>
-                          }
-                        </div>
-                      } @else {
-                        <div>
-                          <span class="font-semibold text-[#161616] block">{{ sale.assetName }}</span>
-                          @if (sale.assetType) {
-                            <span class="text-[10px] font-mono text-[#525252]">{{ sale.assetType }}</span>
-                          }
-                        </div>
-                      }
+                    <!-- Bienes Vendidos (Cantidad + Botón Ver Detalle) -->
+                    <td class="py-3.5 px-4 whitespace-nowrap">
+                      <div class="flex items-center gap-2.5">
+                        <span class="px-2.5 py-1 bg-white border border-[#e0e0e0] text-xs font-mono font-semibold text-[#161616]">
+                          {{ sale.items?.length || 1 }} {{ (sale.items?.length || 1) === 1 ? 'bien' : 'bienes' }}
+                        </span>
+                        <button
+                          type="button"
+                          (click)="openSaleDetails(sale)"
+                          class="px-2.5 py-1 bg-[#f4f4f4] hover:bg-[#0f62fe] hover:text-white border border-[#8d8d8d] hover:border-[#0f62fe] text-xs font-medium text-[#161616] transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span>Ver detalle</span>
+                        </button>
+                      </div>
                     </td>
 
                     <!-- Comprador -->
@@ -399,12 +393,12 @@
 
                     <!-- Fecha de Venta -->
                     <td class="py-3.5 px-4 text-center font-mono text-[#525252] whitespace-nowrap">
-                      {{ sale.saleDate }}
+                      {{ sale.saleDate | date:'shortDate' }}
                     </td>
 
-                    <!-- Motivo / Observaciones -->
+                    <!-- Motivo / Justificación -->
                     <td class="py-3.5 px-4 text-[#525252] leading-relaxed max-w-xs">
-                      {{ sale.notes || 'Sin observaciones registradas' }}
+                      {{ sale.saleReason || sale.notes || 'Sin justificación registrada' }}
                     </td>
 
                     <!-- Total Transacción -->
@@ -486,5 +480,143 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Detalle de Venta (Carbon Enterprise Modal) -->
+    @if (selectedSaleForModal(); as modalSale) {
+      <div
+        class="fixed inset-0 z-50 bg-[#161616]/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
+        (click)="closeSaleDetails()"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-title"
+      >
+        <div
+          class="bg-white border border-[#e0e0e0] shadow-2xl max-w-2xl w-full flex flex-col my-auto"
+          (click)="$event.stopPropagation()"
+        >
+          <!-- Modal Header -->
+          <div class="px-6 py-4 bg-[#f4f4f4] border-b border-[#e0e0e0] flex items-center justify-between">
+            <div>
+              <span class="text-xs font-mono uppercase text-[#0f62fe] font-semibold block">Transacción Comercial</span>
+              <h3 id="modal-title" class="text-lg font-semibold text-[#161616]">
+                Detalle de Venta de Bienes
+              </h3>
+            </div>
+            <button
+              type="button"
+              (click)="closeSaleDetails()"
+              aria-label="Cerrar modal"
+              class="p-1.5 text-[#525252] hover:text-[#161616] hover:bg-[#e0e0e0] transition-colors cursor-pointer"
+            >
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+
+          <!-- Modal Body -->
+          <div class="p-6 space-y-5 max-h-[65vh] overflow-y-auto">
+            <!-- Summary Info Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#f4f4f4] p-4 border border-[#e0e0e0] text-xs">
+              <div>
+                <span class="text-[11px] font-mono text-[#525252] uppercase block">Comprador:</span>
+                <span class="font-semibold text-[#161616] text-sm">{{ modalSale.buyerName }}</span>
+                @if (modalSale.buyerDocument) {
+                  <span class="text-xs font-mono text-[#525252] block mt-0.5">{{ modalSale.buyerDocument }}</span>
+                }
+              </div>
+
+              <div>
+                <span class="text-[11px] font-mono text-[#525252] uppercase block">Fecha de Venta:</span>
+                <span class="font-mono font-medium text-[#161616] text-sm">{{ modalSale.saleDate | date:'shortDate' }}</span>
+              </div>
+
+              <div class="sm:col-span-2 border-t border-[#e0e0e0] pt-2">
+                <span class="text-[11px] font-mono text-[#525252] uppercase block">Motivo / Justificación:</span>
+                <p class="text-[#161616] mt-0.5 leading-relaxed">
+                  {{ modalSale.saleReason || modalSale.notes || 'Sin justificación registrada' }}
+                </p>
+              </div>
+            </div>
+
+            <!-- Items Table -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <h4 class="text-xs font-mono uppercase font-semibold text-[#161616]">
+                  Listado de Bienes Vendidos ({{ modalSale.items?.length || 1 }})
+                </h4>
+              </div>
+
+              <div class="border border-[#e0e0e0] overflow-x-auto">
+                <table class="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr class="bg-[#e0e0e0] text-[#161616] font-mono text-[11px] uppercase">
+                      <th class="py-2.5 px-3 border-b border-[#c6c6c6] w-10">#</th>
+                      <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Nombre del Bien</th>
+                      <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Tipo</th>
+                      <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right">Precio de Venta</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-[#e0e0e0]">
+                    @if (modalSale.items && modalSale.items.length > 0) {
+                      @for (item of modalSale.items; track item.assetId; let idx = $index; let odd = $odd) {
+                        <tr [class.bg-[#f4f4f4]]="odd" [class.bg-white]="!odd">
+                          <td class="py-2.5 px-3 font-mono text-[#525252]">{{ idx + 1 }}</td>
+                          <td class="py-2.5 px-3 font-semibold text-[#161616]">{{ item.assetName }}</td>
+                          <td class="py-2.5 px-3 text-[#525252]">
+                            @if (item.assetType) {
+                              <span class="px-2 py-0.5 bg-white border border-[#e0e0e0] text-[10px] font-mono">
+                                {{ item.assetType }}
+                              </span>
+                            } @else {
+                              <span class="text-[#8d8d8d] font-mono">-</span>
+                            }
+                          </td>
+                          <td class="py-2.5 px-3 font-mono font-semibold text-right text-[#198038] whitespace-nowrap">
+                            $ {{ item.salePrice | number:'1.2-2' }} USD
+                          </td>
+                        </tr>
+                      }
+                    } @else {
+                      <tr class="bg-white">
+                        <td class="py-2.5 px-3 font-mono text-[#525252]">1</td>
+                        <td class="py-2.5 px-3 font-semibold text-[#161616]">{{ modalSale.assetName }}</td>
+                        <td class="py-2.5 px-3 text-[#525252]">
+                          <span class="px-2 py-0.5 bg-white border border-[#e0e0e0] text-[10px] font-mono">
+                            {{ modalSale.assetType || 'General' }}
+                          </span>
+                        </td>
+                        <td class="py-2.5 px-3 font-mono font-semibold text-right text-[#198038] whitespace-nowrap">
+                          $ {{ (modalSale.salePrice || modalSale.totalAmount || 0) | number:'1.2-2' }} USD
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Total Liquidated Section -->
+            <div class="bg-[#defbe6] p-4 border border-[#198038]/30 flex items-center justify-between">
+              <span class="text-xs font-semibold text-[#0e6027] uppercase font-mono">Total de la Transacción:</span>
+              <span class="text-xl font-mono font-semibold text-[#0e6027]">
+                $ {{ (modalSale.totalAmount || modalSale.salePrice || 0) | number:'1.2-2' }} USD
+              </span>
+            </div>
+          </div>
+
+          <!-- Modal Footer -->
+          <div class="px-6 py-3 bg-[#f4f4f4] border-t border-[#e0e0e0] flex items-center justify-end">
+            <button
+              type="button"
+              (click)="closeSaleDetails()"
+              class="h-10 px-6 bg-[#161616] hover:bg-[#393939] text-white text-xs font-medium transition-colors cursor-pointer"
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      </div>
+    }
   }
 </div>

@@ -98,7 +98,7 @@ export class AssetInventoryComponent implements OnInit {
       const itemsMatch = sale.items?.some(
         (i) =>
           i.assetName.toLowerCase().includes(term) ||
-          i.assetType.toLowerCase().includes(term)
+          (i.assetType && i.assetType.toLowerCase().includes(term))
       );
       const singleMatch =
         (sale.assetName && sale.assetName.toLowerCase().includes(term)) ||
@@ -110,6 +110,7 @@ export class AssetInventoryComponent implements OnInit {
         singleMatch ||
         sale.buyerName.toLowerCase().includes(term) ||
         (sale.buyerDocument && sale.buyerDocument.toLowerCase().includes(term)) ||
+        (sale.saleReason && sale.saleReason.toLowerCase().includes(term)) ||
         (sale.notes && sale.notes.toLowerCase().includes(term))
       );
     });
@@ -260,6 +261,17 @@ export class AssetInventoryComponent implements OnInit {
     const target = event.target as HTMLSelectElement;
     this.salesPageSize.set(Number(target.value));
     this.salesCurrentPage.set(1);
+  }
+
+  // Modal State for Sale Details
+  readonly selectedSaleForModal = signal<Sale | null>(null);
+
+  openSaleDetails(sale: Sale): void {
+    this.selectedSaleForModal.set(sale);
+  }
+
+  closeSaleDetails(): void {
+    this.selectedSaleForModal.set(null);
   }
 
   setActiveTab(tab: 'INVENTORY' | 'SALES'): void {

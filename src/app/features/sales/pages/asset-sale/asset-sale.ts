@@ -31,10 +31,10 @@ export class AssetSaleComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
 
   readonly saleForm: FormGroup = this.fb.group({
-    buyerName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
-    buyerDocument: [''],
+    buyerName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
+    buyerDocument: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(50)]],
     saleDate: [new Date().toISOString().split('T')[0], [Validators.required]],
-    notes: ['', [Validators.maxLength(300)]],
+    saleReason: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(300)]],
   });
 
   // Assets available in dropdown (excluding those already added to current sale)
@@ -57,8 +57,16 @@ export class AssetSaleComponent implements OnInit {
     return this.saleForm.get('buyerName');
   }
 
+  get buyerDocumentControl() {
+    return this.saleForm.get('buyerDocument');
+  }
+
   get saleDateControl() {
     return this.saleForm.get('saleDate');
+  }
+
+  get saleReasonControl() {
+    return this.saleForm.get('saleReason');
   }
 
   ngOnInit(): void {
@@ -140,69 +148,33 @@ export class AssetSaleComponent implements OnInit {
 
     const salePayload: CreateSaleDto = {
       buyerName: formValues.buyerName.trim(),
-      buyerDocument: formValues.buyerDocument ? formValues.buyerDocument.trim() : undefined,
+      buyerDocument: formValues.buyerDocument.trim(),
       saleDate: formValues.saleDate,
-      notes: formValues.notes ? formValues.notes.trim() : undefined,
-      totalAmount: this.totalSaleAmount(),
-      items: this.selectedItems(),
+      saleReason: formValues.saleReason.trim(),
+      items: this.selectedItems().map((item) => ({
+        assetId: item.assetId,
+        salePrice: Number(item.salePrice),
+      })),
     };
 
-    // 1. Send single request to create sale with all items
+    // Send single atomic request to POST /api/v1/sales
     this.saleRepository.create(salePayload).subscribe({
       next: () => {
-        // 2. Delete all sold assets from the inventory in parallel
-        const deleteObservables = this.selectedItems().map((item) =>
-          this.assetRepository.delete(item.assetId).pipe(
-            catchError((err) => {
-              console.warn(`Error al eliminar bien ${item.assetId}:`, err);
-              return of(null);
-            })
-          )
-        );
+        this.isSubmitting.set(false);
+        this.showSuccessNotification.set(true);
 
-        forkJoin(deleteObservables).subscribe({
-          next: () => {
-            this.isSubmitting.set(false);
-            this.showSuccessNotification.set(true);
-
-            setTimeout(() => {
-              this.router.navigate(['/inventory']);
-            }, 1200);
-          },
-          error: () => {
-            this.isSubmitting.set(false);
-            this.showSuccessNotification.set(true);
-            setTimeout(() => {
-              this.router.navigate(['/inventory']);
-            }, 1200);
-          },
-        });
+        setTimeout(() => {
+          this.router.navigate(['/inventory']);
+        }, 1200);
       },
       error: (err) => {
-        console.warn('Fallback al registrar venta múltiple:', err);
-        // Fallback: delete assets directly if /sales is pending backend endpoint
-        const deleteObservables = this.selectedItems().map((item) =>
-          this.assetRepository.delete(item.assetId).pipe(
-            catchError((delErr) => {
-              console.warn(`Error al dar de baja bien ${item.assetId}:`, delErr);
-              return of(null);
-            })
-          )
-        );
-
-        forkJoin(deleteObservables).subscribe({
-          next: () => {
-            this.isSubmitting.set(false);
-            this.showSuccessNotification.set(true);
-            setTimeout(() => {
-              this.router.navigate(['/inventory']);
-            }, 1200);
-          },
-          error: () => {
-            this.errorMessage.set('Error al procesar la desincorporación de los bienes.');
-            this.isSubmitting.set(false);
-          },
-        });
+        console.error('Error al registrar la venta:', err);
+        const backendMessage =
+          err.error?.message ||
+          (Array.isArray(err.error?.message) ? err.error.message.join(', ') : null) ||
+          'Error al procesar la venta. Verifique los datos ingresados.';
+        this.errorMessage.set(backendMessage);
+        this.isSubmitting.set(false);
       },
     });
   }
