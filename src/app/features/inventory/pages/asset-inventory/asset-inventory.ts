@@ -95,10 +95,19 @@ export class AssetInventoryComponent implements OnInit {
     const term = this.salesSearchTerm().toLowerCase().trim();
 
     return this.sales().filter((sale) => {
+      const itemsMatch = sale.items?.some(
+        (i) =>
+          i.assetName.toLowerCase().includes(term) ||
+          i.assetType.toLowerCase().includes(term)
+      );
+      const singleMatch =
+        (sale.assetName && sale.assetName.toLowerCase().includes(term)) ||
+        (sale.assetType && sale.assetType.toLowerCase().includes(term));
+
       return (
         !term ||
-        sale.assetName.toLowerCase().includes(term) ||
-        sale.assetType.toLowerCase().includes(term) ||
+        itemsMatch ||
+        singleMatch ||
         sale.buyerName.toLowerCase().includes(term) ||
         (sale.buyerDocument && sale.buyerDocument.toLowerCase().includes(term)) ||
         (sale.notes && sale.notes.toLowerCase().includes(term))
@@ -106,10 +115,19 @@ export class AssetInventoryComponent implements OnInit {
     });
   });
 
-  readonly totalSalesCount = computed(() => this.sales().length);
+  readonly totalSalesCount = computed(() =>
+    this.sales().reduce((acc, curr) => acc + (curr.items?.length || 1), 0)
+  );
 
   readonly totalSalesRevenue = computed(() =>
-    this.sales().reduce((acc, curr) => acc + curr.salePrice, 0)
+    this.sales().reduce((acc, curr) => {
+      const saleTotal =
+        curr.totalAmount ??
+        curr.salePrice ??
+        curr.items?.reduce((sum, item) => sum + (Number(item.salePrice) || 0), 0) ??
+        0;
+      return acc + saleTotal;
+    }, 0)
   );
 
   readonly totalSalesPages = computed(() => {

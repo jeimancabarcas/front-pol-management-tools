@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { SaleRepository } from './sale.repository';
-import { Sale } from './models/sale.model';
+import { CreateSaleDto, Sale } from './models/sale.model';
 import { API_BASE_URL, API_ENDPOINTS } from '../../config/api.config';
 
 @Injectable({
@@ -21,7 +21,7 @@ export class SaleHttpRepository implements SaleRepository {
     return this.http.get<Sale>(`${this.endpoint}/${id}`);
   }
 
-  create(sale: Omit<Sale, 'id'>): Observable<Sale> {
+  create(sale: CreateSaleDto): Observable<Sale> {
     return this.http.post<Sale>(this.endpoint, sale);
   }
 }

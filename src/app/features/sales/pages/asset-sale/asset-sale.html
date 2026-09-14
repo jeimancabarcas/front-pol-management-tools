@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-6 max-w-5xl">
+<div class="flex flex-col gap-6 max-w-6xl">
   <!-- Top Breadcrumb -->
   <div class="flex flex-wrap items-center justify-between gap-3">
     <nav class="flex items-center gap-1.5 text-xs text-[#525252] font-mono uppercase tracking-wider" aria-label="Breadcrumb">
@@ -16,7 +16,7 @@
       Venta y Desincorporación de Bienes
     </h1>
     <p class="mt-2 text-sm text-[#525252] max-w-3xl leading-relaxed">
-      Complete el registro de venta para dar de baja el activo seleccionado del inventario institucional y transferirlo automáticamente al historial comercial.
+      Seleccione uno o varios bienes para realizar la venta en una sola transacción. Podrá definir el precio de venta individual para cada activo y darlos de baja simultáneamente.
     </p>
   </div>
 
@@ -28,7 +28,21 @@
           <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
         </svg>
         <span class="font-medium">
-          ¡Venta procesada con éxito! El bien ha sido retirado del inventario y guardado en el historial.
+          ¡Venta procesada con éxito! Los {{ totalItemsCount() }} bienes han sido retirados del inventario y registrados en el historial.
+        </span>
+      </div>
+    </div>
+  }
+
+  <!-- Error Notification Banner -->
+  @if (errorMessage()) {
+    <div class="bg-[#fff1f1] border-l-4 border-[#da1e28] p-4 flex items-center justify-between gap-3 text-xs text-[#161616]">
+      <div class="flex items-center gap-2">
+        <svg class="w-5 h-5 text-[#da1e28] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+        </svg>
+        <span class="font-medium">
+          {{ errorMessage() }}
         </span>
       </div>
     </div>
@@ -36,102 +50,145 @@
 
   <!-- Form Layout: Form Section + Live Transaction Summary -->
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-    <!-- Left 2 Cols: Form -->
-    <div class="lg:col-span-2">
+    <!-- Left 2 Cols: Multi-Item Sale Form -->
+    <div class="lg:col-span-2 space-y-6">
+      <!-- Section 1: Bienes Incluidos en la Venta -->
+      <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0] space-y-4">
+        <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3">
+          <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
+            1. Selección de Bienes a Vender
+          </h2>
+          <span class="text-xs font-mono text-[#0f62fe] font-semibold">
+            {{ totalItemsCount() }} bienes agregados
+          </span>
+        </div>
+
+        <!-- Asset Selector Row -->
+        @if (isLoadingAssets()) {
+          <div class="text-xs text-[#525252] py-2">Cargando catálogo de bienes...</div>
+        } @else if (availableAssets().length === 0) {
+          <div class="p-3 bg-[#fff1f1] border border-[#da1e28]/30 text-xs text-[#da1e28]">
+            No hay bienes registrados en el inventario para vender.
+          </div>
+        } @else {
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div class="relative flex-1">
+              <select
+                [value]="selectedAssetIdToAdd()"
+                (change)="onSelectAssetChange($event)"
+                class="w-full h-10 px-3 pr-8 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs sm:text-sm text-[#161616] outline-none appearance-none cursor-pointer"
+              >
+                <option value="">-- Seleccione un bien del inventario --</option>
+                @for (asset of selectableAssets(); track asset.id) {
+                  <option [value]="asset.id">
+                    {{ asset.name }} ({{ asset.type || asset.assetType }}) — Valor: $ {{ asset.acquisitionValue | number:'1.2-2' }} USD
+                  </option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#525252]">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              (click)="addAssetToSale()"
+              [disabled]="!selectedAssetIdToAdd()"
+              class="h-10 px-5 bg-[#0f62fe] hover:bg-[#0353e9] disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-medium transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+            >
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              <span>Agregar a la Venta</span>
+            </button>
+          </div>
+        }
+
+        <!-- Items Table with individual price inputs -->
+        @if (selectedItems().length === 0) {
+          <div class="py-8 text-center bg-white border border-dashed border-[#8d8d8d] text-xs text-[#525252] p-4">
+            <svg class="w-8 h-8 mx-auto mb-2 text-[#8d8d8d]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <p class="font-medium text-[#161616]">Lista de venta vacía</p>
+            <p class="text-[11px] text-[#525252] mt-0.5">Seleccione un bien arriba y haga clic en <strong>Agregar a la Venta</strong>.</p>
+          </div>
+        } @else {
+          <div class="border border-[#e0e0e0] bg-white overflow-x-auto">
+            <table class="w-full text-left border-collapse" aria-label="Bienes seleccionados para la venta">
+              <thead>
+                <tr class="bg-[#e0e0e0] text-[#161616] text-[11px] font-semibold uppercase tracking-wider font-mono">
+                  <th class="py-2.5 px-3 border-b border-[#c6c6c6]">Bien / Denominación</th>
+                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right">Valor Original</th>
+                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-right w-44">Precio de Venta (USD) *</th>
+                  <th class="py-2.5 px-3 border-b border-[#c6c6c6] text-center w-16">Acción</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-[#e0e0e0] text-xs">
+                @for (item of selectedItems(); track item.assetId) {
+                  <tr class="hover:bg-[#f4f4f4] transition-colors">
+                    <!-- Bien / Tipo -->
+                    <td class="py-3 px-3">
+                      <span class="font-semibold text-[#161616] block text-xs">{{ item.assetName }}</span>
+                      <span class="text-[11px] text-[#525252] font-mono">{{ item.assetType }}</span>
+                    </td>
+
+                    <!-- Valor Original -->
+                    <td class="py-3 px-3 text-right font-mono text-[#525252] whitespace-nowrap">
+                      $ {{ item.originalValue | number:'1.2-2' }}
+                    </td>
+
+                    <!-- Precio de Venta Individual (Editable) -->
+                    <td class="py-3 px-3 text-right">
+                      <div class="relative inline-block w-36">
+                        <span class="absolute inset-y-0 left-0 pl-2.5 flex items-center text-xs font-semibold text-[#525252] pointer-events-none">
+                          $
+                        </span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          [value]="item.salePrice"
+                          (input)="updateItemPrice(item.assetId, $event)"
+                          class="w-full h-9 pl-6 pr-2 bg-white border border-[#8d8d8d] focus:border-[#0f62fe] text-xs font-mono font-semibold text-[#161616] text-right outline-none transition-colors"
+                        />
+                      </div>
+                    </td>
+
+                    <!-- Eliminar Item -->
+                    <td class="py-3 px-3 text-center">
+                      <button
+                        type="button"
+                        (click)="removeItem(item.assetId)"
+                        title="Quitar de la venta"
+                        class="p-1.5 text-[#da1e28] hover:bg-[#fff1f1] rounded transition-colors cursor-pointer"
+                      >
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </section>
+
+      <!-- Section 2: Datos del Comprador y Transacción -->
       <form [formGroup]="saleForm" (ngSubmit)="onSubmit()" class="space-y-6">
         <section class="bg-[#f4f4f4] p-5 sm:p-6 border border-[#e0e0e0]">
           <div class="flex items-center justify-between border-b border-[#e0e0e0] pb-3 mb-5">
             <h2 class="text-xs font-semibold font-mono tracking-wider text-[#161616] uppercase">
-              Datos de la Transacción
+              2. Datos del Comprador &amp; Facturación
             </h2>
             <span class="text-[11px] text-[#da1e28] font-mono">* Campos Obligatorios</span>
           </div>
 
           <div class="space-y-5">
-            <!-- Field: Seleccionar Bien -->
-            <div>
-              <label for="assetId" class="block text-xs font-semibold text-[#161616] mb-1.5">
-                Seleccionar Bien del Inventario <span class="text-[#da1e28]">*</span>
-              </label>
-              @if (isLoadingAssets()) {
-                <div class="text-xs text-[#525252] py-2">Cargando bienes disponibles...</div>
-              } @else if (assets().length === 0) {
-                <div class="p-3 bg-[#fff1f1] border border-[#da1e28]/30 text-xs text-[#da1e28]">
-                  No hay bienes disponibles en el inventario para vender. Registre un bien primero.
-                </div>
-              } @else {
-                <div class="relative">
-                  <select
-                    id="assetId"
-                    formControlName="assetId"
-                    (change)="onAssetSelectionChange($event)"
-                    [class.border-[#da1e28]]="assetIdControl?.invalid && assetIdControl?.touched"
-                    class="w-full h-10 px-3 pr-8 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm text-[#161616] outline-none appearance-none cursor-pointer"
-                  >
-                    <option value="" disabled>-- Seleccione un bien a dar de baja --</option>
-                    @for (asset of assets(); track asset.id) {
-                      <option [value]="asset.id">
-                        {{ asset.name }} ({{ asset.type || asset.assetType }}) - Val: $ {{ asset.acquisitionValue | number:'1.2-2' }} USD
-                      </option>
-                    }
-                  </select>
-                  <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-[#525252]">
-                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              }
-              @if (assetIdControl?.invalid && assetIdControl?.touched) {
-                <p class="text-xs text-[#da1e28] mt-1">
-                  Debe seleccionar un bien para proceder con la venta.
-                </p>
-              }
-            </div>
-
-            <!-- Grid: Precio de Venta & Fecha de Venta -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <!-- Precio de Venta -->
-              <div>
-                <label for="salePrice" class="block text-xs font-semibold text-[#161616] mb-1.5">
-                  Precio de Venta (USD) <span class="text-[#da1e28]">*</span>
-                </label>
-                <div class="relative">
-                  <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-semibold text-[#525252] pointer-events-none">
-                    $
-                  </span>
-                  <input
-                    id="salePrice"
-                    type="number"
-                    step="0.01"
-                    formControlName="salePrice"
-                    placeholder="0.00"
-                    [class.border-[#da1e28]]="salePriceControl?.invalid && salePriceControl?.touched"
-                    class="w-full h-10 pl-8 pr-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm font-mono text-[#161616] placeholder-[#8d8d8d] outline-none transition-colors"
-                  />
-                </div>
-                @if (salePriceControl?.invalid && salePriceControl?.touched) {
-                  <p class="text-xs text-[#da1e28] mt-1">
-                    Ingrese un precio de venta válido mayor a 0.
-                  </p>
-                }
-              </div>
-
-              <!-- Fecha de Venta -->
-              <div>
-                <label for="saleDate" class="block text-xs font-semibold text-[#161616] mb-1.5">
-                  Fecha de la Venta <span class="text-[#da1e28]">*</span>
-                </label>
-                <input
-                  id="saleDate"
-                  type="date"
-                  formControlName="saleDate"
-                  [class.border-[#da1e28]]="saleDateControl?.invalid && saleDateControl?.touched"
-                  class="w-full h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm font-mono text-[#161616] outline-none transition-colors"
-                />
-              </div>
-            </div>
-
             <!-- Grid: Comprador & Documento -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <!-- Comprador -->
@@ -169,21 +226,38 @@
               </div>
             </div>
 
-            <!-- Notas / Motivo -->
-            <div>
-              <div class="flex items-center justify-between mb-1.5">
-                <label for="notes" class="text-xs font-semibold text-[#161616]">
-                  Motivo de Venta / Observaciones
+            <!-- Grid: Fecha & Notas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <!-- Fecha de Venta -->
+              <div>
+                <label for="saleDate" class="block text-xs font-semibold text-[#161616] mb-1.5">
+                  Fecha de la Venta <span class="text-[#da1e28]">*</span>
                 </label>
-                <span class="text-[11px] text-[#525252] font-mono">Opcional (Máx. 300 car.)</span>
+                <input
+                  id="saleDate"
+                  type="date"
+                  formControlName="saleDate"
+                  [class.border-[#da1e28]]="saleDateControl?.invalid && saleDateControl?.touched"
+                  class="w-full h-10 px-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm font-mono text-[#161616] outline-none transition-colors"
+                />
               </div>
-              <textarea
-                id="notes"
-                rows="3"
-                formControlName="notes"
-                placeholder="Indique el estado del equipo al momento de entrega, número de comprobante o factura comercial..."
-                class="w-full p-3 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-sm text-[#161616] placeholder-[#8d8d8d] outline-none resize-y transition-colors"
-              ></textarea>
+
+              <!-- Notas / Motivo -->
+              <div>
+                <div class="flex items-center justify-between mb-1.5">
+                  <label for="notes" class="text-xs font-semibold text-[#161616]">
+                    Motivo / Observaciones
+                  </label>
+                  <span class="text-[11px] text-[#525252] font-mono">Máx. 300 car.</span>
+                </div>
+                <textarea
+                  id="notes"
+                  rows="2"
+                  formControlName="notes"
+                  placeholder="Factura, estado de entrega o motivo de la desincorporación..."
+                  class="w-full p-2.5 bg-white border-b-2 border-[#8d8d8d] focus:border-[#0f62fe] text-xs text-[#161616] placeholder-[#8d8d8d] outline-none resize-y transition-colors"
+                ></textarea>
+              </div>
             </div>
           </div>
         </section>
@@ -196,8 +270,8 @@
             </svg>
           </div>
           <div>
-            <span class="font-semibold text-[#da1e28] block">Acción Definitiva de Desincorporación</span>
-            <span>Al confirmar, el bien será eliminado del inventario activo y quedará asentado en el historial de ventas institucional.</span>
+            <span class="font-semibold text-[#da1e28] block">Acción Definitiva en una Sola Petición</span>
+            <span>Al confirmar, todos los <strong>{{ totalItemsCount() }}</strong> bienes seleccionados serán desincorporados del inventario activo y quedarán registrados con sus valores individuales en el historial comercial.</span>
           </div>
         </div>
 
@@ -212,14 +286,14 @@
           </button>
           <button
             type="submit"
-            [disabled]="isSubmitting() || assets().length === 0"
+            [disabled]="isSubmitting() || selectedItems().length === 0"
             class="h-12 px-8 bg-[#da1e28] hover:bg-[#ba1b23] active:bg-[#750e13] disabled:opacity-50 text-white text-sm font-medium transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
           >
             @if (isSubmitting()) {
               <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
               <span>Procesando Venta...</span>
             } @else {
-              <span>Confirmar Venta y Dar de Baja</span>
+              <span>Confirmar Venta ({{ totalItemsCount() }} bienes)</span>
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -238,49 +312,51 @@
             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <span>Liquidación Comercial</span>
+            <span>Resumen de Venta</span>
           </div>
           <span class="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[#fff1f1] text-[#da1e28] border border-[#da1e28]/30 uppercase">
-            Baja Activo
+            {{ totalItemsCount() }} items
           </span>
         </div>
 
-        @if (selectedAsset(); as asset) {
-          <!-- Selected Asset Info -->
-          <div class="mb-4">
-            <span class="text-[11px] font-mono text-[#525252] block uppercase mb-1">Bien a Desincorporar</span>
-            <h3 class="text-sm font-semibold text-[#161616] leading-snug">
-              {{ asset.name }}
-            </h3>
-            <span class="text-xs text-[#525252] font-mono block mt-0.5">
-              Tipo: {{ asset.type || asset.assetType }}
-            </span>
+        <!-- Breakdown List -->
+        @if (selectedItems().length > 0) {
+          <div class="space-y-2 mb-4 max-h-48 overflow-y-auto pr-1">
+            @for (item of selectedItems(); track item.assetId) {
+              <div class="p-2 bg-white border border-[#e0e0e0] text-xs">
+                <div class="font-semibold text-[#161616] truncate">{{ item.assetName }}</div>
+                <div class="flex items-center justify-between text-[11px] text-[#525252] font-mono mt-0.5">
+                  <span>{{ item.assetType }}</span>
+                  <span class="font-semibold text-[#198038]">$ {{ item.salePrice | number:'1.2-2' }}</span>
+                </div>
+              </div>
+            }
           </div>
 
           <div class="border-t border-[#e0e0e0] py-3 space-y-2 text-xs">
             <div class="flex items-center justify-between text-[#525252]">
-              <span>Valor en Libros Original:</span>
-              <span class="font-mono font-semibold text-[#161616]">$ {{ asset.acquisitionValue | number:'1.2-2' }}</span>
+              <span>Costo en Libros Total:</span>
+              <span class="font-mono font-semibold text-[#161616]">$ {{ totalOriginalValue() | number:'1.2-2' }}</span>
             </div>
             <div class="flex items-center justify-between text-[#525252]">
-              <span>Precio de Venta Acordado:</span>
-              <span class="font-mono font-semibold text-[#198038]">$ {{ (saleForm.get('salePrice')?.value || 0) | number:'1.2-2' }}</span>
+              <span>Total Liquidación:</span>
+              <span class="font-mono font-semibold text-[#198038]">$ {{ totalSaleAmount() | number:'1.2-2' }}</span>
             </div>
           </div>
         } @else {
           <div class="py-6 text-center text-xs text-[#525252] italic border-b border-[#e0e0e0] mb-4">
-            Seleccione un bien del inventario para visualizar el cálculo patrimonial.
+            Agregue bienes para ver el resumen detallado.
           </div>
         }
 
         <!-- Total Sale Box -->
         <div class="pt-2">
           <div class="flex items-center justify-between text-xs text-[#525252] mb-1">
-            <span>Ingreso por Venta</span>
-            <span class="text-[#198038] font-semibold">+ Ingreso Efectivo</span>
+            <span>Gran Total Ingreso</span>
+            <span class="text-[#198038] font-semibold">+ Ingreso Comercial</span>
           </div>
           <div class="text-2xl font-mono font-semibold text-[#161616]">
-            $ {{ (saleForm.get('salePrice')?.value || 0) | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
+            $ {{ totalSaleAmount() | number:'1.2-2' }} <span class="text-xs text-[#525252] font-normal">USD</span>
           </div>
         </div>
 

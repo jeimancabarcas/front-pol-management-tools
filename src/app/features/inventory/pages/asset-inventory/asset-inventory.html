@@ -332,18 +332,17 @@
           <table class="w-full min-w-[720px] text-left border-collapse" aria-label="Tabla de Historial de Ventas">
             <thead>
               <tr class="bg-[#e0e0e0] text-[#161616] text-xs font-semibold uppercase tracking-wider font-mono">
-                <th class="py-3 px-4 border-b border-[#c6c6c6]">Bien Vendido</th>
-                <th class="py-3 px-4 border-b border-[#c6c6c6]">Tipo</th>
+                <th class="py-3 px-4 border-b border-[#c6c6c6]">Bienes Vendidos &amp; Precios Unitarios</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6]">Comprador / Empresa</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6] text-center">Fecha de Venta</th>
                 <th class="py-3 px-4 border-b border-[#c6c6c6]">Motivo / Observaciones</th>
-                <th class="py-3 px-4 border-b border-[#c6c6c6] text-right">Precio de Venta</th>
+                <th class="py-3 px-4 border-b border-[#c6c6c6] text-right">Total Transacción</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-[#e0e0e0] text-xs">
               @if (isLoadingSales()) {
                 <tr>
-                  <td colspan="6" class="py-12 text-center text-[#525252]">
+                  <td colspan="5" class="py-12 text-center text-[#525252]">
                     <div class="inline-flex items-center gap-2">
                       <span class="w-4 h-4 border-2 border-[#0f62fe] border-t-transparent rounded-full animate-spin"></span>
                       <span>Cargando historial de ventas...</span>
@@ -352,7 +351,7 @@
                 </tr>
               } @else if (filteredSales().length === 0) {
                 <tr>
-                  <td colspan="6" class="py-12 text-center text-[#525252]">
+                  <td colspan="5" class="py-12 text-center text-[#525252]">
                     <p class="text-sm font-medium text-[#161616]">No hay registros de ventas en el historial</p>
                     <p class="text-xs text-[#525252] mt-1">Las ventas procesadas se listarán aquí automáticamente.</p>
                   </td>
@@ -362,18 +361,32 @@
                   <tr
                     [class.bg-[#f4f4f4]]="odd"
                     [class.bg-white]="!odd"
-                    class="hover:bg-[#e8f0fe] transition-colors"
+                    class="hover:bg-[#e8f0fe] transition-colors align-top"
                   >
-                    <!-- Bien Vendido -->
-                    <td class="py-3.5 px-4 font-semibold text-[#161616]">
-                      {{ sale.assetName }}
-                    </td>
-
-                    <!-- Tipo -->
-                    <td class="py-3.5 px-4 text-[#525252]">
-                      <span class="px-2 py-0.5 bg-white border border-[#e0e0e0] text-[11px] font-medium whitespace-nowrap">
-                        {{ sale.assetType }}
-                      </span>
+                    <!-- Bienes Vendidos & Precios Unitarios -->
+                    <td class="py-3.5 px-4 min-w-[240px]">
+                      @if (sale.items && sale.items.length > 0) {
+                        <div class="space-y-1.5">
+                          @for (item of sale.items; track item.assetId) {
+                            <div class="flex items-center justify-between gap-3 bg-white p-2 border border-[#e0e0e0]">
+                              <div>
+                                <span class="font-semibold text-[#161616] block">{{ item.assetName }}</span>
+                                <span class="text-[10px] font-mono text-[#525252]">{{ item.assetType }}</span>
+                              </div>
+                              <span class="font-mono text-[#198038] font-semibold whitespace-nowrap text-xs">
+                                $ {{ item.salePrice | number:'1.2-2' }} USD
+                              </span>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div>
+                          <span class="font-semibold text-[#161616] block">{{ sale.assetName }}</span>
+                          @if (sale.assetType) {
+                            <span class="text-[10px] font-mono text-[#525252]">{{ sale.assetType }}</span>
+                          }
+                        </div>
+                      }
                     </td>
 
                     <!-- Comprador -->
@@ -394,9 +407,9 @@
                       {{ sale.notes || 'Sin observaciones registradas' }}
                     </td>
 
-                    <!-- Precio de Venta -->
+                    <!-- Total Transacción -->
                     <td class="py-3.5 px-4 font-mono font-semibold text-right text-[#198038] whitespace-nowrap text-sm">
-                      $ {{ sale.salePrice | number:'1.2-2' }} USD
+                      $ {{ (sale.totalAmount || sale.salePrice || 0) | number:'1.2-2' }} USD
                     </td>
                   </tr>
                 }
